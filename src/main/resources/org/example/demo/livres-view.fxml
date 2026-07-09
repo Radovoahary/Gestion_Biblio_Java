@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.controller.LivreController" prefHeight="560.0" prefWidth="700.0">
+    <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+    </padding>
+
+    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+        <children>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <children>
+                    <Label text="🔍 Rechercher :" style="-font-weight: bold;"/>
+                    <TextField fx:id="txtRecherche" promptText="Titre ou auteur..." HBox.hgrow="ALWAYS" onKeyReleased="#filtrerLivres"/>
+                </children>
+            </HBox>
+
+            <TableView fx:id="tableLivres" VBox.hgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="50.0" />
+                    <TableColumn fx:id="colTitre" text="Titre" prefWidth="180.0" />
+                    <TableColumn fx:id="colAuteur" text="Auteur" prefWidth="140.0" />
+                    <TableColumn fx:id="colIsbn" text="ISBN" prefWidth="100.0" />
+                    <TableColumn fx:id="colAnnee" text="Année" prefWidth="60.0" />
+                    <TableColumn fx:id="colDispo" text="Dispo" prefWidth="60.0" />
+                </columns>
+            </TableView>
+        </children>
+    </VBox>
+
+    <VBox spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 5; -fx-background-radius: 5;" prefWidth="250.0">
+        <padding>
+            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+        </padding>
+        <children>
+            <Label text="➕ Ajouter un Livre" style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+
+            <TextField fx:id="txtTitre" promptText="Titre" />
+            <TextField fx:id="txtAuteur" promptText="Auteur" />
+            <TextField fx:id="txtIsbn" promptText="ISBN" />
+            <TextField fx:id="txtAnnee" promptText="Année de publication" />
+            <TextField fx:id="txtDispo" promptText="Nombre d'exemplaires" />
+            <TextField fx:id="txtCategorie" promptText="ID Catégorie (ex: 1)" />
+
+            <Button text="Enregistrer" maxWidth="1.7976931348623157E308" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#ajouterLivre" />
+        </children>
+    </VBox>
+</HBox>
