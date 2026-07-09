@@ -35,7 +35,8 @@ public class MainController {
 
     @FXML
     private void afficherVueMembres() {
-        System.out.println(" Chargement de la vue des Membres...");
+        System.out.println("🔄 Chargement de la vue des Membres...");
+        chargerSousVue("membres-view.fxml"); // Décommente ou ajoute cette ligne
     }
 
     @FXML
