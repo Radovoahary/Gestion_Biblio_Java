@@ -29,8 +29,8 @@ public class MainController {
 
     @FXML
     private void afficherVueLivres() {
-        // Cette méthode sera appelée au clic sur le bouton "Gestion des Livres"
         System.out.println(" Chargement de la vue des Livres...");
+        chargerSousVue("livres-view.fxml");
     }
 
     @FXML
