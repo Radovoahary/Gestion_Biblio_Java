@@ -2,68 +2,57 @@ package org.example.demo.model;
 
 import java.time.LocalDate;
 
-/**
- * Représente l'emprunt d'un livre par un membre.
- * Fait le lien entre la table 'membres' et 'livres'.
- */
 public class Emprunt {
     private int id;
-    private int membreId;
-    private int livreId;
+    private int idLivre;
+    private int idMembre;
     private LocalDate dateEmprunt;
-    private LocalDate dateRetourPrevu;
-    private LocalDate dateRetourReel; // Peut être null si le livre n'est pas encore rendu
+    private LocalDate dateRetourPrevue;
+    private LocalDate dateRetourEffective;
 
-    // Constructeur complet
-    public Emprunt(int id, int membreId, int livreId, LocalDate dateEmprunt, LocalDate dateRetourPrevu, LocalDate dateRetourReel) {
+    // Attributs bonus
+    private String titreLivre;
+    private String nomMembre;
+
+    // Constructeur
+    public Emprunt(int id, int idLivre, int idMembre, LocalDate dateEmprunt, LocalDate dateRetourPrevue, LocalDate dateRetourEffective) {
         this.id = id;
-        this.membreId = membreId;
-        this.livreId = livreId;
+        this.idLivre = idLivre;
+        this.idMembre = idMembre;
         this.dateEmprunt = dateEmprunt;
-        this.dateRetourPrevu = dateRetourPrevu;
-        this.dateRetourReel = dateRetourReel;
+        this.dateRetourPrevue = dateRetourPrevue;
+        this.dateRetourEffective = dateRetourEffective;
     }
 
     // Getters et Setters
     public int getId() {
         return id;
     }
-    public void setId(int id) {
-        this.id = id;
+    public int getIdLivre() {
+        return idLivre;
     }
-
-    public int getMembreId() {
-        return membreId;
+    public int getIdMembre() {
+        return idMembre;
     }
-    public void setMembreId(int membreId) {
-        this.membreId = membreId;
-    }
-
-    public int getLivreId() {
-        return livreId;
-    }
-    public void setLivreId(int livreId) {
-        this.livreId = livreId;
-    }
-
     public LocalDate getDateEmprunt() {
         return dateEmprunt;
     }
-    public void setDateEmprunt(LocalDate dateEmprunt) {
-        this.dateEmprunt = dateEmprunt;
+    public LocalDate getDateRetourPrevue() {
+        return dateRetourPrevue;
     }
-
-    public LocalDate getDateRetourPrevu() {
-        return dateRetourPrevu;
+    public LocalDate getDateRetourEffective() {
+        return dateRetourEffective;
     }
-    public void setDateRetourPrevu(LocalDate dateRetourPrevu) {
-        this.dateRetourPrevu = dateRetourPrevu;
+    public String getTitreLivre() {
+        return titreLivre;
     }
-
-    public LocalDate getDateRetourReel() {
-        return dateRetourReel;
+    public void setTitreLivre(String titreLivre) {
+        this.titreLivre = titreLivre;
     }
-    public void setDateRetourReel(LocalDate dateRetourReel) {
-        this.dateRetourReel = dateRetourReel;
+    public String getNomMembre() {
+        return nomMembre;
+    }
+    public void setNomMembre(String nomMembre) {
+        this.nomMembre = nomMembre;
     }
 }

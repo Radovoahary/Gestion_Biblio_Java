@@ -60,6 +60,7 @@ public class MainController {
     @FXML
     private void afficherVueEmprunts() {
         System.out.println(" Clic détecté sur : Emprunts");
-        // La vue emprunts sera gérée à l'étape suivante
+        chargerSousVue("emprunts-view.fxml"); // On active la liaison dynamique !
     }
+
 }

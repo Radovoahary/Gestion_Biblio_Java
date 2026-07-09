@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.controller.EmpruntController" prefHeight="560.0" prefWidth="700.0">
+    <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+
+    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+        <Label text=" Suivi des Emprunts en cours" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+        <TableView fx:id="tableEmprunts" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="40.0" />
+                <TableColumn fx:id="colLivre" text="Livre" prefWidth="180.0" />
+                <TableColumn fx:id="colMembre" text="Membre" prefWidth="150.0" />
+                <TableColumn fx:id="colDateEmprunt" text="Date Emprunt" prefWidth="100.0" />
+                <TableColumn fx:id="colDatePrevue" text="Retour Prévu" prefWidth="100.0" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <VBox spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" prefWidth="250.0">
+        <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+        <Label text=" Enregistrer un Emprunt" style="-fx-font-weight: bold;" />
+        <TextField fx:id="txtIdLivre" promptText="ID du Livre" />
+        <TextField fx:id="txtIdMembre" promptText="ID du Membre" />
+        <Button text="Valider l'emprunt" onAction="#validerEmprunt" maxWidth="Infinity" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;"/>
+    </VBox>
+</HBox>
