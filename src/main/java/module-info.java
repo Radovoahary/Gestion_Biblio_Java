@@ -1,12 +1,12 @@
 module org.example.demo {
     requires javafx.controls;
     requires javafx.fxml;
-    requires java.sql;          // Indispensable pour la connexion MySQL / JDBC
-    requires com.google.gson;     // Indispensable pour lire le fichier JSON de config
+    requires java.sql;
+    requires com.google.gson;
 
-    // Permet à JavaFX de lire tes contrôleurs graphiques
-    opens org.example.demo to javafx.fxml;
+    // Autorise JavaFX à lire les contrôleurs graphiques
     opens org.example.demo.controller to javafx.fxml;
+    opens org.example.demo to javafx.fxml;
 
-   exports org.example.demo;
+    exports org.example.demo;
 }
