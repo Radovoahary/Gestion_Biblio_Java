@@ -1,79 +1,91 @@
-/* Fond général de l'application */
+/* Variables globales et fond principal */
 .root {
-    -fx-background-color: #121214; /* Noir mat moderne */
-    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-background-color: #0d111d; /* Fond ultra sombre moderne */
+    -fx-font-family: "Segoe UI", system-ui, sans-serif;
+    -fx-text-fill: #f1f5f9;
 }
 
-/* Style des labels / Textes */
-.label {
-    -fx-text-fill: #FFFFFF;
+/* Menu latéral (Sidebar) */
+.sidebar {
+    -fx-background-color: #0b0e17;
+    -fx-border-color: #1e293b;
+    -fx-border-width: 0 1 0 0; /* Bordure fine uniquement à droite */
 }
 
-/* Boutons Modernes avec effet de lumière */
-.button {
-    -fx-background-color: linear-gradient(to right, #2c3e50, #3498db);
-    -fx-text-fill: white;
+/* Titre de l'application */
+.sidebar-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
+}
+.sidebar-subtitle {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 11px;
+}
+
+/* Boutons du menu latéral */
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-alignment: center-left;
+    -fx-padding: 12px 20px;
     -fx-background-radius: 8px;
-    -fx-padding: 10px 20px;
     -fx-cursor: hand;
-    /* Transition douce */
-    -fx-transition: all 0.3s ease-in-out;
+}
+.menu-button:hover {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #ffffff;
 }
 
-/* Animation et Lueur au survol du bouton (Hover) */
-.button:hover {
-    -fx-background-color: linear-gradient(to right, #2980b9, #00d2ff);
-    /* Effet d'ombre lumineuse (Neon Glow) */
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 210, 255, 0.6), 15, 0.0, 0, 0);
-}
-
-/* Bouton spécifique pour valider les actions (ex: Orange/Néon) */
-.btn-action {
-    -fx-background-color: linear-gradient(to right, #f39c12, #e67e22);
-}
-.btn-action:hover {
-    -fx-background-color: linear-gradient(to right, #e67e22, #f1c40f);
-    -fx-effect: dropshadow(three-pass-box, rgba(241, 196, 15, 0.6), 15, 0.0, 0, 0);
-}
-
-/* Champs de texte transparents et futuristes */
-.text-field {
-    -fx-background-color: #1e1e24;
-    -fx-text-fill: white;
-    -fx-border-color: #3f3f46;
-    -fx-border-radius: 6px;
-    -fx-background-radius: 6px;
-    -fx-padding: 8px;
-}
-.text-field:focused {
-    -fx-border-color: #00d2ff;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 210, 255, 0.4), 8, 0.0, 0, 0);
-}
-
-/* Tableaux (TableView) ultra design */
-.table-view {
-    -fx-background-color: transparent;
-    -fx-border-color: #2d2d34;
-    -fx-border-radius: 8px;
-}
-.table-view .column-header-background {
-    -fx-background-color: #1e1e24;
-}
-.table-view .column-header {
-    -fx-background-color: transparent;
-    -fx-size: 40px;
-}
-.table-view .column-header .label {
-    -fx-text-fill: #00d2ff; /* En-tête bleu néon */
+/* Bouton actif / Sélectionné (ex: Tableau de bord) */
+.menu-button-active {
+    -fx-background-color: #5334eb; /* Violet royal de la maquette */
+    -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
 }
-.table-view .table-row-cell {
-    -fx-background-color: #151518;
-    -fx-text-fill: white;
-    -fx-border-color: #1e1e24 transparent transparent transparent;
+.menu-button-active:hover {
+    -fx-background-color: #6344fc;
 }
-.table-view .table-row-cell:filled:selected {
-    -fx-background-color: #2a2a35;
-    -fx-text-fill: #00d2ff;
+
+/* Conteneur principal (Zone centrale) */
+.main-content {
+    -fx-background-color: #0d111d;
+    -fx-padding: 30px;
+}
+
+/* Titres de bienvenue */
+.welcome-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+.welcome-subtitle {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 14px;
+}
+
+/* Cartes de statistiques (Cards) */
+.stat-card {
+    -fx-background-color: #151b2c; /* Couleur de carte sur l'image */
+    -fx-background-radius: 16px;
+    -fx-border-color: #222f48;
+    -fx-border-radius: 16px;
+    -fx-border-width: 1px;
+    -fx-padding: 20px;
+}
+.stat-label {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+}
+.stat-number {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+.stat-trend {
+    -fx-text-fill: #a855f7; /* Violet clair pour les tendances */
+    -fx-font-size: 12px;
 }
