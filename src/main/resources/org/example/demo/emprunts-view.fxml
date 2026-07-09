@@ -21,9 +21,16 @@
 
     <VBox spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" prefWidth="250.0">
         <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
-        <Label text=" Enregistrer un Emprunt" style="-fx-font-weight: bold;" />
+        <Label text=" Actions sur les Emprunts" style="-fx-font-weight: bold;" />
         <TextField fx:id="txtIdLivre" promptText="ID du Livre" />
         <TextField fx:id="txtIdMembre" promptText="ID du Membre" />
-        <Button text="Valider l'emprunt" onAction="#validerEmprunt" maxWidth="Infinity" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+        <VBox spacing="8.0">
+            <children>
+                <Button text="Créer un emprunt" onAction="#validerEmprunt" maxWidth="Infinity" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Button text="Marquer comme retourné" onAction="#retournerLivre" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Button text="Supprimer la fiche" onAction="#supprimerEmprunt" maxWidth="Infinity" style="-fx-background-color: #c0392b; -fx-text-fill: white;"/>
+            </children>
+        </VBox>
     </VBox>
 </HBox>

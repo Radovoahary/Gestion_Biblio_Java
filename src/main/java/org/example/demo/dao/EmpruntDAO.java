@@ -9,35 +9,88 @@ import java.util.List;
 
 public class EmpruntDAO {
 
+    // CREATE : Enregistrer un emprunt avec gestion transactionnelle du stock
+    public boolean enregistrerEmprunt(int idLivre, int idMembre) {
+        String checkStockQuery = "SELECT exemplaires_disponibles FROM livres WHERE id = ?";
+        String insertEmpruntQuery = "INSERT INTO emprunts (id_livre, id_membre, date_emprunt, date_retour_prevue) VALUES (?, ?, ?, ?)";
+        String updateStockQuery = "UPDATE livres SET exemplaires_disponibles = exemplaires_disponibles - 1 WHERE id = ?";
 
-    //Récupère tous les emprunts avec les titres des livres et noms des membres associés (Via JOIN)
+        Connection conn = null;
+        try {
+            conn = DatabaseConfig.getConnection();
+            conn.setAutoCommit(false); // Début de la transaction
 
+            // 1. Vérification du stock
+            try (PreparedStatement stmtCheck = conn.prepareStatement(checkStockQuery)) {
+                stmtCheck.setInt(1, idLivre);
+                try (ResultSet rs = stmtCheck.executeQuery()) {
+                    if (rs.next() && rs.getInt("exemplaires_disponibles") <= 0) {
+                        System.err.println(" Aucun exemplaire disponible pour ce livre.");
+                        conn.rollback();
+                        return false;
+                    }
+                }
+            }
+
+            // 2. Insertion de l'emprunt (Durée par défaut : 14 jours)
+            LocalDate aujourdHui = LocalDate.now();
+            LocalDate retourPrevu = aujourdHui.plusDays(14);
+            try (PreparedStatement stmtInsert = conn.prepareStatement(insertEmpruntQuery)) {
+                stmtInsert.setInt(1, idLivre);
+                stmtInsert.setInt(2, idMembre);
+                stmtInsert.setDate(3, Date.valueOf(aujourdHui));
+                stmtInsert.setDate(4, Date.valueOf(retourPrevu));
+                stmtInsert.executeUpdate();
+            }
+
+            // 3. Diminution du stock du livre
+            try (PreparedStatement stmtUpdate = conn.prepareStatement(updateStockQuery)) {
+                stmtUpdate.setInt(1, idLivre);
+                stmtUpdate.executeUpdate();
+            }
+
+            conn.commit(); // Validation finale
+            return true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+        }
+    }
+
+    // READ : Récupérer tous les emprunts actifs (non encore retournés officiellement)
     public List<Emprunt> getAllEmprunts() {
         List<Emprunt> liste = new ArrayList<>();
-        String query = "SELECT e.*, l.titre, m.nom FROM emprunts e " +
-                "JOIN livres l ON e.livre_id = l.id " +
-                "JOIN membres m ON e.membre_id = m.id";
+        String query = "SELECT e.*, l.titre AS titre_livre, m.nom AS nom_membre " +
+                "FROM emprunts e " +
+                "JOIN livres l ON e.id_livre = l.id " +
+                "JOIN membres m ON e.id_membre = m.id " +
+                "WHERE e.date_retour_effective IS NULL"; // Filtre uniquement ceux en cours
 
         try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                Date de = rs.getDate("date_emprunt");
-                // Correction ici : 'date_retour_prevu' (sans 'e') et 'date_retour_reel'
-                Date drp = rs.getDate("date_retour_prevu");
-                Date drr = rs.getDate("date_retour_reel");
+                Date effectiveDateSql = rs.getDate("date_retour_effective");
+                LocalDate dateEffective = (effectiveDateSql != null) ? effectiveDateSql.toLocalDate() : null;
 
                 Emprunt emp = new Emprunt(
                         rs.getInt("id"),
-                        rs.getInt("livre_id"),
-                        rs.getInt("membre_id"),
-                        de != null ? de.toLocalDate() : null,
-                        drp != null ? drp.toLocalDate() : null,
-                        drr != null ? drr.toLocalDate() : null
+                        rs.getInt("id_livre"),
+                        rs.getInt("id_membre"),
+                        rs.getDate("date_emprunt").toLocalDate(),
+                        rs.getDate("date_retour_prevue").toLocalDate(),
+                        dateEffective
                 );
-                emp.setTitreLivre(rs.getString("titre"));
-                emp.setNomMembre(rs.getString("nom"));
+                // Injection des attributs bonus pour affichage UI
+                emp.setTitreLivre(rs.getString("titre_livre"));
+                emp.setNomMembre(rs.getString("nom_membre"));
                 liste.add(emp);
             }
         } catch (SQLException e) {
@@ -46,116 +99,67 @@ public class EmpruntDAO {
         return liste;
     }
 
-    /**
-     * Enregistre un emprunt et décrémente automatiquement le stock du livre.
-     * Utilise une TRANSACTION SQL pour éviter les désynchronisations de données.
-     */
-    public boolean enregistrerEmprunt(int membreId, int livreId) {
-        Connection conn = null;
-        PreparedStatement checkStmt = null;
-        PreparedStatement insertStmt = null;
-        PreparedStatement updateStmt = null;
-        ResultSet rs = null;
+    // UPDATE : Marquer un retour de livre (+ ré-augmentation du stock)
+    public boolean retournerLivre(int idLivre, int idMembre) {
+        String updateEmpruntQuery = "UPDATE emprunts SET date_retour_effective = ? WHERE id_livre = ? AND id_membre = ? AND date_retour_effective IS NULL";
+        String updateStockQuery = "UPDATE livres SET exemplaires_disponibles = exemplaires_disponibles + 1 WHERE id = ?";
 
+        Connection conn = null;
         try {
             conn = DatabaseConfig.getConnection();
-            // 1. Désactiver l'auto-commit pour démarrer une transaction manuelle
             conn.setAutoCommit(false);
 
-            // 2. Vérifier s'il reste des exemplaires disponibles
-            String checkQuery = "SELECT exemplaires_disponibles FROM livres WHERE id = ?";
-            checkStmt = conn.prepareStatement(checkQuery);
-            checkStmt.setInt(1, livreId);
-            rs = checkStmt.executeQuery();
-
-            if (rs.next()) {
-                int dispo = rs.getInt("exemplaires_disponibles");
-                if (dispo <= 0) {
-                    System.out.println(" Impossible : Plus d'exemplaires disponibles !");
-                    conn.rollback(); // On annule tout
-                    return false;
+            // 1. Mettre à jour la date de retour effective
+            try (PreparedStatement stmtEmp = conn.prepareStatement(updateEmpruntQuery)) {
+                stmtEmp.setDate(1, Date.valueOf(LocalDate.now()));
+                stmtEmp.setInt(2, idLivre);
+                stmtEmp.setInt(3, idMembre);
+                if (stmtEmp.executeUpdate() == 0) {
+                    conn.rollback();
+                    return false; // Aucun emprunt actif correspondant trouvé
                 }
-            } else {
-                conn.rollback();
-                return false;
             }
 
-            // 3. Insérer l'emprunt (date_retour_prevue)
-            String insertQuery = "INSERT INTO emprunts (membre_id, livre_id, date_emprunt, date_retour_prevue) VALUES (?, ?, ?, ?)";
-            insertStmt = conn.prepareStatement(insertQuery);
-            insertStmt.setInt(1, membreId);
-            insertStmt.setInt(2, livreId);
-            insertStmt.setDate(3, Date.valueOf(LocalDate.now()));
-            insertStmt.setDate(4, Date.valueOf(LocalDate.now().plusDays(14)));
-            insertStmt.executeUpdate();
+            // 2. Rendre le livre à nouveau disponible au stock (+1)
+            try (PreparedStatement stmtStock = conn.prepareStatement(updateStockQuery)) {
+                stmtStock.setInt(1, idLivre);
+                stmtStock.executeUpdate();
+            }
 
-            // 4. Décrémenter le stock du livre (-1)
-            String updateQuery = "UPDATE livres SET exemplaires_disponibles = exemplaires_disponibles - 1 WHERE id = ?";
-            updateStmt = conn.prepareStatement(updateQuery);
-            updateStmt.setInt(1, livreId);
-            updateStmt.executeUpdate();
-
-            // 5. Valider définitivement la transaction si tout est OK
             conn.commit();
             return true;
-
         } catch (SQLException e) {
-            System.err.println(" Erreur pendant la transaction d'emprunt : " + e.getMessage());
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                }
+                catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
+            e.printStackTrace();
             return false;
         } finally {
-            try {
-                if (rs != null) rs.close();
-                if (checkStmt != null) checkStmt.close();
-                if (insertStmt != null) insertStmt.close();
-                if (updateStmt != null) updateStmt.close();
-                if (conn != null) conn.setAutoCommit(true); // On remet par défaut
-            } catch (SQLException e) { e.printStackTrace(); }
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    /**
-     * Enregistre le retour d'un livre et remet le stock à jour (+1)
-     */
-    public boolean retournerLivre(int empruntId, int livreId) {
-        Connection conn = null;
-        PreparedStatement updateEmpruntStmt = null;
-        PreparedStatement updateLivreStmt = null;
-
-        try {
-            conn = DatabaseConfig.getConnection();
-            conn.setAutoCommit(false); // Début de la transaction
-
-            // 1. Mettre à jour la date de retour réel de l'emprunt (date_retour_effective)
-            String queryEmprunt = "UPDATE emprunts SET date_retour_effective = ? WHERE id = ?";
-            updateEmpruntStmt = conn.prepareStatement(queryEmprunt);
-            updateEmpruntStmt.setDate(1, Date.valueOf(LocalDate.now()));
-            updateEmpruntStmt.setInt(2, empruntId);
-            updateEmpruntStmt.executeUpdate();
-
-            // 2. Réaugmenter le stock du livre rendu (+1)
-            String queryLivre = "UPDATE livres SET exemplaires_disponibles = exemplaires_disponibles + 1 WHERE id = ?";
-            updateLivreStmt = conn.prepareStatement(queryLivre);
-            updateLivreStmt.setInt(1, livreId);
-            updateLivreStmt.executeUpdate();
-
-            conn.commit(); // Validation
-            return true;
-
+    // DELETE : Supprimer une fiche d'emprunt définitivement
+    public boolean supprimerEmprunt(int id) {
+        String query = "DELETE FROM emprunts WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, id);
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println(" Erreur lors du retour du livre : " + e.getMessage());
-            if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
-            }
+            e.printStackTrace();
             return false;
-        } finally {
-            try {
-                if (updateEmpruntStmt != null) updateEmpruntStmt.close();
-                if (updateLivreStmt != null) updateLivreStmt.close();
-                if (conn != null) conn.setAutoCommit(true);
-            } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 }

@@ -21,6 +21,7 @@ public class MembreController {
 
     private final MembreDAO membreDAO = new MembreDAO();
     private final ObservableList<Membre> listeMembres = FXCollections.observableArrayList();
+    private Membre membreSelectionne;
 
     @FXML
     public void initialize() {
@@ -30,6 +31,17 @@ public class MembreController {
         colType.setCellValueFactory(new PropertyValueFactory<>("typeMembre"));
 
         comboType.setItems(FXCollections.observableArrayList("ETUDIANT", "ENSEIGNANT"));
+
+        // Remplissage automatique des champs lors de la sélection
+        tableMembres.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                membreSelectionne = newSelection;
+                txtNom.setText(membreSelectionne.getNom());
+                txtEmail.setText(membreSelectionne.getEmail());
+                comboType.setValue(membreSelectionne.getTypeMembre());
+            }
+        });
+
         rafraichirTableau();
     }
 
@@ -40,10 +52,40 @@ public class MembreController {
 
     @FXML
     private void ajouterMembre() {
+        if (txtNom.getText().isEmpty()) return;
         Membre m = new Membre(0, txtNom.getText(), txtEmail.getText(), comboType.getValue());
         if (membreDAO.ajouterMembre(m)) {
             rafraichirTableau();
-            txtNom.clear(); txtEmail.clear();
+            viderChamps();
         }
+    }
+
+    @FXML
+    private void modifierMembre() {
+        if (membreSelectionne == null) return;
+        membreSelectionne.setNom(txtNom.getText());
+        membreSelectionne.setEmail(txtEmail.getText());
+        membreSelectionne.setTypeMembre(comboType.getValue());
+
+        if (membreDAO.modifierMembre(membreSelectionne)) {
+            rafraichirTableau();
+            viderChamps();
+        }
+    }
+
+    @FXML
+    private void supprimerMembre() {
+        if (membreSelectionne == null) return;
+        if (membreDAO.supprimerMembre(membreSelectionne.getId())) {
+            rafraichirTableau();
+            viderChamps();
+        }
+    }
+
+    @FXML
+    private void viderChamps() {
+        membreSelectionne = null;
+        tableMembres.getSelectionModel().clearSelection();
+        txtNom.clear(); txtEmail.clear(); comboType.setValue(null);
     }
 }

@@ -22,6 +22,7 @@ public class EmpruntController {
 
     private final EmpruntDAO empruntDAO = new EmpruntDAO();
     private final ObservableList<Emprunt> listeEmprunts = FXCollections.observableArrayList();
+    private Emprunt empruntSelectionne;
 
     @FXML
     public void initialize() {
@@ -30,6 +31,14 @@ public class EmpruntController {
         colMembre.setCellValueFactory(new PropertyValueFactory<>("nomMembre"));
         colDateEmprunt.setCellValueFactory(new PropertyValueFactory<>("dateEmprunt"));
         colDatePrevue.setCellValueFactory(new PropertyValueFactory<>("dateRetourPrevue"));
+
+        tableEmprunts.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                empruntSelectionne = newSelection;
+                txtIdLivre.setText(String.valueOf(empruntSelectionne.getIdLivre()));
+                txtIdMembre.setText(String.valueOf(empruntSelectionne.getIdMembre()));
+            }
+        });
 
         rafraichirTableau();
     }
@@ -47,11 +56,34 @@ public class EmpruntController {
 
             if (empruntDAO.enregistrerEmprunt(idLivre, idMembre)) {
                 rafraichirTableau();
-                txtIdLivre.clear();
-                txtIdMembre.clear();
+                viderChamps();
             }
         } catch (NumberFormatException e) {
-            System.err.println("⚠️ ID invalides.");
+            System.err.println("IDs incorrects.");
         }
+    }
+
+    @FXML
+    private void retournerLivre() {
+        if (empruntSelectionne == null) return;
+        if (empruntDAO.retournerLivre(empruntSelectionne.getIdLivre(), empruntSelectionne.getIdMembre())) {
+            rafraichirTableau();
+            viderChamps();
+        }
+    }
+
+    @FXML
+    private void supprimerEmprunt() {
+        if (empruntSelectionne == null) return;
+        if (empruntDAO.supprimerEmprunt(empruntSelectionne.getId())) {
+            rafraichirTableau();
+            viderChamps();
+        }
+    }
+
+    private void viderChamps() {
+        empruntSelectionne = null;
+        tableEmprunts.getSelectionModel().clearSelection();
+        txtIdLivre.clear(); txtIdMembre.clear();
     }
 }

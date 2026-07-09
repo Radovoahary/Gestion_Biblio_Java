@@ -11,7 +11,7 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("main-view.fxml")); // ou ton fichier principal
-        Scene scene = new Scene(fxmlLoader.load(), 900, 650);
+        Scene scene = new Scene(fxmlLoader.load(), 1150, 750);
 
         // Injection CSS
         scene.getStylesheets().add(getClass().getResource("/org/example/demo/style.css").toExternalForm());

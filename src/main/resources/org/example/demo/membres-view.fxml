@@ -20,10 +20,22 @@
 
     <VBox spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" prefWidth="250.0">
         <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
-        <Label text=" Nouveau Membre" style="-fx-font-weight: bold;" />
+        <Label text=" Actions sur les Membres" style="-fx-font-weight: bold;" />
         <TextField fx:id="txtNom" promptText="Nom Complet" />
         <TextField fx:id="txtEmail" promptText="Email" />
         <ComboBox fx:id="comboType" promptText="Type de membre" maxWidth="Infinity" />
-        <Button text="Enregistrer" onAction="#ajouterMembre" maxWidth="Infinity" style="-fx-background-color: #2980b9; -fx-text-fill: white;"/>
+
+        <VBox spacing="8.0">
+            <children>
+                <Button text="Ajouter" onAction="#ajouterMembre" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <HBox spacing="10.0">
+                    <children>
+                        <Button text="Modifier" onAction="#modifierMembre" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <Button text="Supprimer" onAction="#supprimerMembre" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </children>
+                </HBox>
+                <Button text="Vider" onAction="#viderChamps" maxWidth="Infinity" style="-fx-background-color: #7f8c8d; -fx-text-fill: white;"/>
+            </children>
+        </VBox>
     </VBox>
 </HBox>

@@ -36,7 +36,7 @@
             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
         </padding>
         <children>
-            <Label text=" Ajouter un Livre" style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+            <Label text=" Actions sur les Livres" style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
 
             <TextField fx:id="txtTitre" promptText="Titre" />
             <TextField fx:id="txtAuteur" promptText="Auteur" />
@@ -45,7 +45,18 @@
             <TextField fx:id="txtDispo" promptText="Nombre d'exemplaires" />
             <TextField fx:id="txtCategorie" promptText="ID Catégorie (ex: 1)" />
 
-            <Button text="Enregistrer" maxWidth="1.7976931348623157E308" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#ajouterLivre" />
+            <VBox spacing="8.0">
+                <children>
+                    <Button text="Ajouter" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#ajouterLivre" />
+                    <HBox spacing="10.0">
+                        <children>
+                            <Button text="Modifier" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#modifierLivre" />
+                            <Button text="Supprimer" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#supprimerLivre" />
+                        </children>
+                    </HBox>
+                    <Button text="Vider" maxWidth="Infinity" style="-fx-background-color: #7f8c8d; -fx-text-fill: white;" onAction="#viderChamps" />
+                </children>
+            </VBox>
         </children>
     </VBox>
 </HBox>
