@@ -36,7 +36,7 @@
             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
         </padding>
         <children>
-            <Label text="➕ Ajouter un Livre" style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+            <Label text=" Ajouter un Livre" style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
 
             <TextField fx:id="txtTitre" promptText="Titre" />
             <TextField fx:id="txtAuteur" promptText="Auteur" />

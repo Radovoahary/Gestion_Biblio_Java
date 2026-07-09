@@ -9,9 +9,9 @@ import java.util.List;
 
 public class EmpruntDAO {
 
-    /**
-     * Récupère tous les emprunts avec les titres des livres et noms des membres associés (Via JOIN)
-     */
+
+    //Récupère tous les emprunts avec les titres des livres et noms des membres associés (Via JOIN)
+
     public List<Emprunt> getAllEmprunts() {
         List<Emprunt> liste = new ArrayList<>();
         String query = "SELECT e.*, l.titre, m.nom FROM emprunts e " +
@@ -24,8 +24,9 @@ public class EmpruntDAO {
 
             while (rs.next()) {
                 Date de = rs.getDate("date_emprunt");
-                Date drp = rs.getDate("date_retour_prevue"); // Avec un 'e'
-                Date dre = rs.getDate("date_retour_effective"); // Le vrai nom en BDD
+                // Correction ici : 'date_retour_prevu' (sans 'e') et 'date_retour_reel'
+                Date drp = rs.getDate("date_retour_prevu");
+                Date drr = rs.getDate("date_retour_reel");
 
                 Emprunt emp = new Emprunt(
                         rs.getInt("id"),
@@ -33,7 +34,7 @@ public class EmpruntDAO {
                         rs.getInt("membre_id"),
                         de != null ? de.toLocalDate() : null,
                         drp != null ? drp.toLocalDate() : null,
-                        dre != null ? dre.toLocalDate() : null
+                        drr != null ? drr.toLocalDate() : null
                 );
                 emp.setTitreLivre(rs.getString("titre"));
                 emp.setNomMembre(rs.getString("nom"));

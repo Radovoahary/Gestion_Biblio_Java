@@ -1,66 +1,67 @@
 package org.example.demo.controller;
 
+import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
 import java.io.IOException;
-import java.net.URL;
 
-/**
- * Contrôleur principal de l'application.
- * Gère le changement dynamique des vues au centre de l'écran.
- */
 public class MainController {
-
     @FXML
-    private StackPane contentArea; // Zone centrale définie dans main-view.fxml
+    private StackPane contentArea;
 
-
-     // Charge de manière dynamique un fichier FXML au centre de la fenêtre.
-
-    private void chargerSousVue(String fxmlFileName) {
-        String cheminComplet = "/org/example/demo/" + fxmlFileName;
-        System.out.println(" Tentative de chargement de : " + cheminComplet);
-
-        URL fxmlUrl = getClass().getResource(cheminComplet);
-
-        if (fxmlUrl == null) {
-            System.err.println(" Fatal error : Le fichier FXML est introuvable au chemin : " + cheminComplet);
-            return;
-        }
-
+    /**
+     * Charge une sous-vue (.fxml) de manière dynamique au centre de l'application
+     * avec une animation de fondu fluide (Fade In).
+     */
+    private void chargerSousVue(String fxmlFile) {
         try {
-            FXMLLoader loader = new FXMLLoader(fxmlUrl);
-            Parent vue = loader.load();
+            System.out.println(" Tentative de chargement de : " + fxmlFile);
 
-            // Nettoyage de la zone centrale et injection de la nouvelle vue
-            contentArea.getChildren().clear();
-            contentArea.getChildren().add(vue);
-            System.out.println(" Vue " + fxmlFileName + " injectée avec succès !");
+            // Chargement du fichier FXML depuis le dossier de ressources
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/demo/" + fxmlFile));
+            Node nouvelleVue = loader.load();
 
+            // --- ANIMATION ---
+            nouvelleVue.setOpacity(0.0);
+
+            // On injecte la nouvelle vue dans le conteneur central du borderPane
+            contentArea.getChildren().setAll(nouvelleVue);
+
+            // Transition de fondu de 400 millisecondes
+            FadeTransition fondu = new FadeTransition(Duration.millis(400), nouvelleVue);
+            fondu.setFromValue(0.0); // De invisible...
+            fondu.setToValue(1.0);   // ... à 100% visible
+            fondu.play();            // Lancement de l'animation
+            // -------------------------------
+
+            System.out.println(" Vue " + fxmlFile + " injectée avec succès !");
         } catch (IOException e) {
-            System.err.println(" Erreur de parsing du fichier FXML : " + fxmlFileName);
+            System.err.println(" Erreur lors du chargement de la vue : " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+
+    // Actions des boutons du menu latéral
+
     @FXML
     private void afficherVueLivres() {
-        System.out.println(" Clic détecté sur : Gestion des Livres");
+        System.out.println(" Clic détecté sur : Livres");
         chargerSousVue("livres-view.fxml");
     }
 
     @FXML
     private void afficherVueMembres() {
-        System.out.println(" Clic détecté sur : Gestion des Membres");
+        System.out.println(" Clic détecté sur : Membres");
         chargerSousVue("membres-view.fxml");
     }
 
     @FXML
     private void afficherVueEmprunts() {
         System.out.println(" Clic détecté sur : Emprunts");
-        chargerSousVue("emprunts-view.fxml"); // On active la liaison dynamique !
+        chargerSousVue("emprunts-view.fxml");
     }
-
 }

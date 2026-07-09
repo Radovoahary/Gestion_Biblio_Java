@@ -16,9 +16,9 @@
                     <VBox.margin><Insets bottom="20.0" /></VBox.margin>
                 </Label>
 
-                <Button fx:id="btnLivres" maxWidth="1.7976931348623157E308" text="📚 Gestion des Livres" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#afficherVueLivres"/>
-                <Button fx:id="btnMembres" maxWidth="1.7976931348623157E308" text="👥 Gestion des Membres" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#afficherVueMembres"/>
-                <Button fx:id="btnEmprunts" maxWidth="1.7976931348623157E308" text="🔄 Emprunts &amp; Retours" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#afficherVueEmprunts"/>
+                <Button fx:id="btnLivres" maxWidth="1.7976931348623157E308" text=" Gestion des Livres" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#afficherVueLivres"/>
+                <Button fx:id="btnMembres" maxWidth="1.7976931348623157E308" text=" Gestion des Membres" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#afficherVueMembres"/>
+                <Button fx:id="btnEmprunts" maxWidth="1.7976931348623157E308" text=" Emprunts &amp; Retours" style="-fx-background-color: #34495e; -fx-text-fill: white;" onAction="#afficherVueEmprunts"/>
             </children>
         </VBox>
     </left>
