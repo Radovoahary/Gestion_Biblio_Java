@@ -4,64 +4,78 @@ import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import java.io.IOException;
 
 public class MainController {
+    @FXML private StackPane contentArea;
+    @FXML private Button btnDashboard;
+    @FXML private Button btnLivres;
+    @FXML private Button btnMembres;
+    @FXML private Button btnEmprunts;
+
     @FXML
-    private StackPane contentArea;
+    public void initialize() {
+        // CORRECTION : Charge le dashboard automatiquement dès le lancement de l'application
+        afficherDashboard();
+    }
 
     /**
-     * Charge une sous-vue (.fxml) de manière dynamique au centre de l'application
-     * avec une animation de fondu fluide (Fade In).
+     * Gère le chargement d'une sous-vue et anime la transition
      */
-    private void chargerSousVue(String fxmlFile) {
+    private void chargerSousVue(String fxmlFile, Button boutonActif) {
         try {
-            System.out.println(" Tentative de chargement de : " + fxmlFile);
-
-            // Chargement du fichier FXML depuis le dossier de ressources
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/demo/" + fxmlFile));
             Node nouvelleVue = loader.load();
 
-            // --- ANIMATION ---
+            // --- ANIMATION FADE-IN ---
             nouvelleVue.setOpacity(0.0);
-
-            // On injecte la nouvelle vue dans le conteneur central du borderPane
             contentArea.getChildren().setAll(nouvelleVue);
+            FadeTransition fondu = new FadeTransition(Duration.millis(300), nouvelleVue);
+            fondu.setFromValue(0.0);
+            fondu.setToValue(1.0);
+            fondu.play();
 
-            // Transition de fondu de 400 millisecondes
-            FadeTransition fondu = new FadeTransition(Duration.millis(400), nouvelleVue);
-            fondu.setFromValue(0.0); // De invisible...
-            fondu.setToValue(1.0);   // ... à 100% visible
-            fondu.play();            // Lancement de l'animation
-            // -------------------------------
+            // CORRECTION : Met à jour dynamiquement la surbrillance CSS du menu latéral
+            mettreAJourMenuStyle(boutonActif);
 
-            System.out.println(" Vue " + fxmlFile + " injectée avec succès !");
         } catch (IOException e) {
-            System.err.println(" Erreur lors du chargement de la vue : " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Erreur chargement sous-vue: " + e.getMessage());
         }
     }
 
+    private void mettreAJourMenuStyle(Button boutonActif) {
+        // Réinitialise tous les boutons
+        btnDashboard.getStyleClass().remove("menu-button-active");
+        btnLivres.getStyleClass().remove("menu-button-active");
+        btnMembres.getStyleClass().remove("menu-button-active");
+        btnEmprunts.getStyleClass().remove("menu-button-active");
 
-    // Actions des boutons du menu latéral
+        // Applique le style uniquement au bouton cliqué
+        if (boutonActif != null) {
+            boutonActif.getStyleClass().add("menu-button-active");
+        }
+    }
+
+    @FXML
+    private void afficherDashboard() {
+        chargerSousVue("dashboard-view.fxml", btnDashboard);
+    }
 
     @FXML
     private void afficherVueLivres() {
-        System.out.println(" Clic détecté sur : Livres");
-        chargerSousVue("livres-view.fxml");
+        chargerSousVue("livres-view.fxml", btnLivres);
     }
 
     @FXML
     private void afficherVueMembres() {
-        System.out.println(" Clic détecté sur : Membres");
-        chargerSousVue("membres-view.fxml");
+        chargerSousVue("membres-view.fxml", btnMembres);
     }
 
     @FXML
     private void afficherVueEmprunts() {
-        System.out.println(" Clic détecté sur : Emprunts");
-        chargerSousVue("emprunts-view.fxml");
+        chargerSousVue("emprunts-view.fxml", btnEmprunts);
     }
 }

@@ -4,63 +4,32 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane prefHeight="750.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.controller.MainController">
+<BorderPane prefHeight={750.0} prefWidth={1100.0} xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.controller.MainController">
 
-    <left>
-        <VBox spacing="8.0" styleClass="sidebar" prefWidth="240.0" BorderPane.alignment="CENTER">
+<left>
+<VBox spacing="8.0" styleClass="sidebar" prefWidth="240.0" BorderPane.alignment="CENTER">
+    <padding>
+        <Insets bottom="20.0" left="15.0" right="15.0" top="30.0" />
+    </padding>
+    <children>
+        <VBox spacing="2.0">
             <padding>
-                <Insets bottom="20.0" left="15.0" right="15.0" top="30.0" />
+                <Insets bottom="30.0" left="10.0"/>
             </padding>
-            <children>
-                <VBox spacing="2.0">
-                    <padding>
-                        <Insets bottom="30.0" left="10.0"/>
-                    </padding>
-                    <Label text="BiblioManage" styleClass="sidebar-title" />
-                    <Label text="Gestion de bibliothèque" styleClass="sidebar-subtitle" />
-                </VBox>
-
-                <Button fx:id="btnDashboard" maxWidth="Infinity" text=" Tableau de bord" styleClass="menu-button, menu-button-active" />
-                <Button fx:id="btnLivres" maxWidth="Infinity" text=" Livres" styleClass="menu-button" onAction="#afficherVueLivres"/>
-                <Button fx:id="btnMembres" maxWidth="Infinity" text=" Adhérents" styleClass="menu-button" onAction="#afficherVueMembres"/>
-                <Button fx:id="btnEmprunts" maxWidth="Infinity" text=" Emprunts" styleClass="menu-button" onAction="#afficherVueEmprunts"/>
-            </children>
+            <Label text="BiblioManage" styleClass="sidebar-title" />
+            <Label text="Gestion de bibliothèque" styleClass="sidebar-subtitle" />
         </VBox>
-    </left>
 
-    <center>
-        <StackPane fx:id="contentArea" styleClass="main-content" BorderPane.alignment="CENTER">
-            <children>
-                <VBox spacing="25.0">
-                    <children>
-                        <VBox spacing="5.0">
-                            <Label text="Bonjour, Admin " styleClass="welcome-title" />
-                            <Label text="Voici ce qui se passe aujourd'hui dans votre bibliothèque." styleClass="welcome-subtitle" />
-                        </VBox>
+        <Button fx:id="btnDashboard" maxWidth="Infinity" text="Tableau de bord" styleClass="menu-button, menu-button-active" onAction="#afficherDashboard" />
+        <Button fx:id="btnLivres" maxWidth="Infinity" text="Livres" styleClass="menu-button" onAction="#afficherVueLivres"/>
+        <Button fx:id="btnMembres" maxWidth="Infinity" text="Adhérents" styleClass="menu-button" onAction="#afficherVueMembres"/>
+        <Button fx:id="btnEmprunts" maxWidth="Infinity" text="Emprunts" styleClass="menu-button" onAction="#afficherVueEmprunts"/>
+    </children>
+</VBox>
+</left>
 
-                        <HBox spacing="20.0" maxWidth="Infinity">
-                            <children>
-                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10.0">
-                                    <Label text="Livres" styleClass="stat-label"/>
-                                    <Label text="4 892" styleClass="stat-number"/>
-                                    <Label text="+12 ce mois" styleClass="stat-trend"/>
-                                </VBox>
-                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10.0">
-                                    <Label text="Adhérents" styleClass="stat-label"/>
-                                    <Label text="1 256" styleClass="stat-number"/>
-                                    <Label text="+18 ce mois" styleClass="stat-trend"/>
-                                </VBox>
-                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10.0">
-                                    <Label text="Emprunts actifs" styleClass="stat-label"/>
-                                    <Label text="350" styleClass="stat-number"/>
-                                    <Label text="-7 ce mois" styleClass="stat-trend"/>
-                                </VBox>
-                            </children>
-                        </HBox>
-                    </children>
-                </VBox>
-            </children>
-        </StackPane>
-    </center>
+<center>
+<StackPane fx:id="contentArea" BorderPane.alignment="CENTER" />
+</center>
 
-</BorderPane>
+        </BorderPane>

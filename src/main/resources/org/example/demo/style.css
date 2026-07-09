@@ -34,9 +34,16 @@
     -fx-background-radius: 8px;
     -fx-cursor: hand;
 }
+.menu-button:focused {
+    /* On retire la bordure bleue ou jaune par défaut de Windows/JavaFX */
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+/* On garde l'effet uniquement quand la souris passe vraiment dessus */
 .menu-button:hover {
-    -fx-background-color: #1e293b;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: #34495e; /* Ta couleur de surbrillance au survol */
 }
 
 /* Bouton actif / Sélectionné (ex: Tableau de bord) */
@@ -44,9 +51,6 @@
     -fx-background-color: #5334eb; /* Violet royal de la maquette */
     -fx-text-fill: #ffffff;
     -fx-font-weight: bold;
-}
-.menu-button-active:hover {
-    -fx-background-color: #6344fc;
 }
 
 /* Conteneur principal (Zone centrale) */
