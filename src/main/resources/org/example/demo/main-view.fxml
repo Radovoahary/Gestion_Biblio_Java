@@ -4,32 +4,62 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane prefHeight={750.0} prefWidth={1100.0} xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.controller.MainController">
+<BorderPane prefHeight="750.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.controller.MainController">
 
-<left>
-<VBox spacing="8.0" styleClass="sidebar" prefWidth="240.0" BorderPane.alignment="CENTER">
-    <padding>
-        <Insets bottom="20.0" left="15.0" right="15.0" top="30.0" />
-    </padding>
-    <children>
-        <VBox spacing="2.0">
+    <left>
+        <VBox spacing="8.0" styleClass="sidebar" prefWidth="240.0" BorderPane.alignment="CENTER">
             <padding>
-                <Insets bottom="30.0" left="10.0"/>
+                <Insets bottom="20.0" left="15.0" right="15.0" top="30.0" />
             </padding>
-            <Label text="BiblioManage" styleClass="sidebar-title" />
-            <Label text="Gestion de bibliothèque" styleClass="sidebar-subtitle" />
+            <children>
+                <VBox spacing="2.0">
+                    <padding>
+                        <Insets bottom="30.0" left="10.0"/>
+                    </padding>
+                    <Label text="BiblioManage" styleClass="sidebar-title" />
+                    <Label text="Gestion de bibliothèque" styleClass="sidebar-subtitle" />
+                </VBox>
+
+                <!-- CORRECTIF : onAction ajouté, permet enfin de revenir au tableau de bord -->
+                <Button fx:id="btnDashboard" maxWidth="Infinity" text="🏠 Tableau de bord" styleClass="menu-button, menu-button-active" onAction="#afficherTableauDeBord"/>
+                <Button fx:id="btnLivres" maxWidth="Infinity" text="📚 Livres" styleClass="menu-button" onAction="#afficherVueLivres"/>
+                <Button fx:id="btnMembres" maxWidth="Infinity" text="👥 Adhérents" styleClass="menu-button" onAction="#afficherVueMembres"/>
+                <Button fx:id="btnEmprunts" maxWidth="Infinity" text="🔄 Emprunts" styleClass="menu-button" onAction="#afficherVueEmprunts"/>
+            </children>
         </VBox>
+    </left>
 
-        <Button fx:id="btnDashboard" maxWidth="Infinity" text="Tableau de bord" styleClass="menu-button, menu-button-active" onAction="#afficherDashboard" />
-        <Button fx:id="btnLivres" maxWidth="Infinity" text="Livres" styleClass="menu-button" onAction="#afficherVueLivres"/>
-        <Button fx:id="btnMembres" maxWidth="Infinity" text="Adhérents" styleClass="menu-button" onAction="#afficherVueMembres"/>
-        <Button fx:id="btnEmprunts" maxWidth="Infinity" text="Emprunts" styleClass="menu-button" onAction="#afficherVueEmprunts"/>
-    </children>
-</VBox>
-</left>
+    <center>
+        <StackPane fx:id="contentArea" styleClass="main-content" BorderPane.alignment="CENTER">
+            <children>
+                <VBox spacing="25.0">
+                    <children>
+                        <VBox spacing="5.0">
+                            <Label text="Bonjour, Admin 👋" styleClass="welcome-title" />
+                            <Label text="Voici ce qui se passe aujourd'hui dans votre bibliothèque." styleClass="welcome-subtitle" />
+                        </VBox>
 
-<center>
-<StackPane fx:id="contentArea" BorderPane.alignment="CENTER" />
-</center>
+                        <HBox spacing="20.0" maxWidth="Infinity">
+                            <children>
+                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10.0">
+                                    <Label text="Livres" styleClass="stat-label"/>
+                                    <!-- CORRECTIF : fx:id ajouté pour afficher le vrai nombre de livres -->
+                                    <Label fx:id="lblStatLivres" text="0" styleClass="stat-number"/>
+                                </VBox>
+                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10.0">
+                                    <Label text="Adhérents" styleClass="stat-label"/>
+                                    <Label fx:id="lblStatMembres" text="0" styleClass="stat-number"/>
+                                </VBox>
+                                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10.0">
+                                    <Label text="Emprunts actifs" styleClass="stat-label"/>
+                                    <Label fx:id="lblStatEmprunts" text="0" styleClass="stat-number"/>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </children>
+        </StackPane>
+    </center>
 
-        </BorderPane>
+</BorderPane>

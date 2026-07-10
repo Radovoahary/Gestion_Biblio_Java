@@ -9,6 +9,12 @@ import java.util.List;
 
 public class EmpruntDAO {
 
+    private String dernierErreur;
+
+    public String getDernierErreur() {
+        return dernierErreur;
+    }
+
     // CREATE : Enregistrer un emprunt avec gestion transactionnelle du stock
     public boolean enregistrerEmprunt(int idLivre, int idMembre) {
         String checkStockQuery = "SELECT exemplaires_disponibles FROM livres WHERE id = ?";
@@ -24,8 +30,13 @@ public class EmpruntDAO {
             try (PreparedStatement stmtCheck = conn.prepareStatement(checkStockQuery)) {
                 stmtCheck.setInt(1, idLivre);
                 try (ResultSet rs = stmtCheck.executeQuery()) {
-                    if (rs.next() && rs.getInt("exemplaires_disponibles") <= 0) {
-                        System.err.println(" Aucun exemplaire disponible pour ce livre.");
+                    if (!rs.next()) {
+                        dernierErreur = "Aucun livre ne correspond à cet identifiant.";
+                        conn.rollback();
+                        return false;
+                    }
+                    if (rs.getInt("exemplaires_disponibles") <= 0) {
+                        dernierErreur = "Aucun exemplaire disponible pour ce livre.";
                         conn.rollback();
                         return false;
                     }
@@ -52,6 +63,7 @@ public class EmpruntDAO {
             conn.commit(); // Validation finale
             return true;
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors de l'enregistrement de l'emprunt (ID membre invalide ?) : " + e.getMessage();
             if (conn != null) {
                 try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
             }
@@ -94,6 +106,7 @@ public class EmpruntDAO {
                 liste.add(emp);
             }
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors du chargement des emprunts : " + e.getMessage();
             e.printStackTrace();
         }
         return liste;
@@ -115,8 +128,9 @@ public class EmpruntDAO {
                 stmtEmp.setInt(2, idLivre);
                 stmtEmp.setInt(3, idMembre);
                 if (stmtEmp.executeUpdate() == 0) {
+                    dernierErreur = "Aucun emprunt actif ne correspond à ce livre et ce membre.";
                     conn.rollback();
-                    return false; // Aucun emprunt actif correspondant trouvé
+                    return false;
                 }
             }
 
@@ -129,6 +143,7 @@ public class EmpruntDAO {
             conn.commit();
             return true;
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors de l'enregistrement du retour : " + e.getMessage();
             if (conn != null) {
                 try {
                     conn.rollback();
@@ -158,6 +173,7 @@ public class EmpruntDAO {
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors de la suppression de la fiche : " + e.getMessage();
             e.printStackTrace();
             return false;
         }

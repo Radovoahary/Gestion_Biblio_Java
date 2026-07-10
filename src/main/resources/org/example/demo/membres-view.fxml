@@ -7,7 +7,7 @@
     <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
 
     <VBox spacing="10.0" HBox.hgrow="ALWAYS">
-        <Label text=" Liste des Membres" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+        <Label text="👥 Liste des Membres" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
         <TableView fx:id="tableMembres" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colId" text="ID" prefWidth="50.0" />
@@ -20,7 +20,7 @@
 
     <VBox spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" prefWidth="250.0">
         <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
-        <Label text=" Actions sur les Membres" style="-fx-font-weight: bold;" />
+        <Label text="👥 Actions sur les Membres" style="-fx-font-weight: bold;" />
         <TextField fx:id="txtNom" promptText="Nom Complet" />
         <TextField fx:id="txtEmail" promptText="Email" />
         <ComboBox fx:id="comboType" promptText="Type de membre" maxWidth="Infinity" />

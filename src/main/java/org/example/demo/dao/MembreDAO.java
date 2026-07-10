@@ -8,6 +8,12 @@ import java.util.List;
 
 public class MembreDAO {
 
+    private String dernierErreur;
+
+    public String getDernierErreur() {
+        return dernierErreur;
+    }
+
     // CREATE : Ajouter un membre
     public boolean ajouterMembre(Membre membre) {
         String query = "INSERT INTO membres (nom, email, type_membre) VALUES (?, ?, ?)";
@@ -18,6 +24,7 @@ public class MembreDAO {
             stmt.setString(3, membre.getTypeMembre());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors de l'ajout du membre (email en double ?) : " + e.getMessage();
             e.printStackTrace();
             return false;
         }
@@ -39,6 +46,7 @@ public class MembreDAO {
                 ));
             }
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors du chargement des membres : " + e.getMessage();
             e.printStackTrace();
         }
         return liste;
@@ -55,6 +63,7 @@ public class MembreDAO {
             stmt.setInt(4, membre.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors de la modification du membre : " + e.getMessage();
             e.printStackTrace();
             return false;
         }
@@ -68,7 +77,8 @@ public class MembreDAO {
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("❌ Impossible de supprimer : ce membre possède des fiches d'emprunts associées.");
+            dernierErreur = "Impossible de supprimer : ce membre possède des fiches d'emprunts associées.";
+            System.err.println("❌ " + dernierErreur);
             return false;
         }
     }

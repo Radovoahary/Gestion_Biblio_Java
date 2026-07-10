@@ -1,41 +1,49 @@
 package org.example.demo.config;
+
 import com.google.gson.Gson;
-import java.io.FileReader;
-import java.sql.Connection;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+
 public class DatabaseConfig {
-    private String url;
-    private String user;
-    private String password;
 
-    // Stocke l'instance unique de connexion (Pattern Singleton)
-    private static Connection connection = null;
+    private static DbCredentials credentials;
 
-    /* Lecture du fichier JSON et retourne une connexion active.*/
-    public static Connection getConnection()
-    {
-        try {
-            if (connection != null && !connection.isClosed())
-            {
-                return connection;
+    static {
+        chargerConfiguration();
+    }
+
+    private static void chargerConfiguration() {
+        try (InputStream is = DatabaseConfig.class.getResourceAsStream("/org/example/demo/config/db-config.json")) {
+            if (is == null) {
+                throw new IllegalStateException(
+                        "Fichier db-config.json introuvable dans les ressources (org/example/demo/config/).");
             }
-            //Utilisation de Gson pour lecture du fichier JSON
-            Gson gson = new Gson();
-            try (FileReader reader = new FileReader("db_config.json"))
-            {
-                //Transformation JSON en DatabaseConfig
-                DatabaseConfig config = gson.fromJson(reader, DatabaseConfig.class);
-
-                //Connection à la base de donnée via drive JDBC
-                connection = DriverManager.getConnection(config.url, config.user, config.password);
+            try (Reader reader = new InputStreamReader(is)) {
+                credentials = new Gson().fromJson(reader, DbCredentials.class);
             }
-        }
-        catch (Exception e)
-        {
-            System.out.println("Erreur de connexion BDD : " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println(" Impossible de charger la configuration de la base de données : " + e.getMessage());
             e.printStackTrace();
         }
-        return connection;
+    }
+
+    public static Connection getConnection() throws SQLException {
+        if (credentials == null || credentials.url == null) {
+            throw new SQLException("Configuration de la base de données absente ou invalide (db-config.json).");
+        }
+        return DriverManager.getConnection(credentials.url, credentials.user, credentials.password);
+    }
+
+    /** Classe interne utilisée uniquement pour le mapping JSON via Gson.
+     *  Les noms des champs doivent correspondre exactement aux clés du JSON. */
+    private static class DbCredentials {
+        String url;
+        String user;
+        String password;
     }
 }

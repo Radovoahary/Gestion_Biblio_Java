@@ -7,7 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.example.demo.dao.LivreDAO;
 import org.example.demo.model.Livre;
-import java.util.Optional;
+import org.example.demo.util.AlertUtils;
 
 public class LivreController {
 
@@ -40,9 +40,9 @@ public class LivreController {
         colAnnee.setCellValueFactory(new PropertyValueFactory<>("annee"));
         colDispo.setCellValueFactory(new PropertyValueFactory<>("exemplairesDisponibles"));
 
-        tableLivres.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            if (newSel != null) {
-                livreSelectionne = newSel;
+        tableLivres.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                livreSelectionne = newSelection;
                 txtTitre.setText(livreSelectionne.getTitre());
                 txtAuteur.setText(livreSelectionne.getAuteur());
                 txtIsbn.setText(livreSelectionne.getIsbn());
@@ -51,6 +51,7 @@ public class LivreController {
                 txtCategorie.setText(String.valueOf(livreSelectionne.getCategorieId()));
             }
         });
+
         rafraichirTableau();
     }
 
@@ -59,90 +60,108 @@ public class LivreController {
         tableLivres.setItems(listeLivres);
     }
 
-    private void afficherAlerte(Alert.AlertType type, String titre, String msg) {
-        Alert alert = new Alert(type);
-        alert.setTitle(titre);
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
-        alert.showAndWait();
+    // AMÉLIORATION : validation des champs obligatoires avant tout envoi en base,
+    // avec message clair au lieu d'un échec silencieux.
+    private boolean champsValides() {
+        if (txtTitre.getText() == null || txtTitre.getText().isBlank()) {
+            AlertUtils.erreur("Champ manquant", "Le titre du livre est obligatoire.");
+            return false;
+        }
+        if (txtAuteur.getText() == null || txtAuteur.getText().isBlank()) {
+            AlertUtils.erreur("Champ manquant", "L'auteur du livre est obligatoire.");
+            return false;
+        }
+        return true;
     }
 
     @FXML
     private void ajouterLivre() {
-        if (txtTitre.getText().trim().isEmpty() || txtAuteur.getText().trim().isEmpty()) {
-            afficherAlerte(Alert.AlertType.WARNING, "Champs invalides", "Le titre et l'auteur sont obligatoires.");
-            return;
-        }
+        if (!champsValides()) return;
         try {
-            Livre l = new Livre(
-                    0, txtTitre.getText().trim(), txtAuteur.getText().trim(), txtIsbn.getText().trim(),
-                    Integer.parseInt(txtAnnee.getText().trim()),
-                    Integer.parseInt(txtDispo.getText().trim()),
-                    Integer.parseInt(txtCategorie.getText().trim())
-            );
-            if (livreDAO.ajouterLivre(l)) {
+            Livre nouveau = new Livre(0, txtTitre.getText(), txtAuteur.getText(), txtIsbn.getText(),
+                    Integer.parseInt(txtAnnee.getText()), Integer.parseInt(txtDispo.getText()),
+                    Integer.parseInt(txtCategorie.getText()));
+
+            if (livreDAO.ajouterLivre(nouveau)) {
                 rafraichirTableau();
                 viderChamps();
-                afficherAlerte(Alert.AlertType.INFORMATION, "Succès", "Le livre a été enregistré.");
             } else {
-                afficherAlerte(Alert.AlertType.ERROR, "Erreur", "L'insertion en base a échoué.");
+                AlertUtils.erreur("Échec de l'ajout",
+                        livreDAO.getDernierErreur() != null ? livreDAO.getDernierErreur()
+                                : "Le livre n'a pas pu être ajouté.");
             }
         } catch (NumberFormatException e) {
-            afficherAlerte(Alert.AlertType.ERROR, "Format incorrect", "L'année, le stock et la catégorie doivent être des nombres.");
+            AlertUtils.erreur("Format invalide",
+                    "Année, exemplaires disponibles et catégorie doivent être des nombres entiers.");
         }
     }
 
     @FXML
     private void modifierLivre() {
-        if (livreSelectionne == null) return;
+        if (livreSelectionne == null) {
+            AlertUtils.erreur("Aucune sélection", "Veuillez sélectionner un livre dans le tableau avant de le modifier.");
+            return;
+        }
+        if (!champsValides()) return;
         try {
-            livreSelectionne.setTitre(txtTitre.getText().trim());
-            livreSelectionne.setAuteur(txtAuteur.getText().trim());
-            livreSelectionne.setIsbn(txtIsbn.getText().trim());
-            livreSelectionne.setAnnee(Integer.parseInt(txtAnnee.getText().trim()));
-            livreSelectionne.setExemplairesDisponibles(Integer.parseInt(txtDispo.getText().trim()));
-            livreSelectionne.setCategorieId(Integer.parseInt(txtCategorie.getText().trim()));
+            livreSelectionne.setTitre(txtTitre.getText());
+            livreSelectionne.setAuteur(txtAuteur.getText());
+            livreSelectionne.setIsbn(txtIsbn.getText());
+            livreSelectionne.setAnnee(Integer.parseInt(txtAnnee.getText()));
+            livreSelectionne.setExemplairesDisponibles(Integer.parseInt(txtDispo.getText()));
+            livreSelectionne.setCategorieId(Integer.parseInt(txtCategorie.getText()));
 
             if (livreDAO.modifierLivre(livreSelectionne)) {
                 rafraichirTableau();
                 viderChamps();
-                afficherAlerte(Alert.AlertType.INFORMATION, "Succès", "Livre modifié avec succès.");
+            } else {
+                AlertUtils.erreur("Échec de la modification",
+                        livreDAO.getDernierErreur() != null ? livreDAO.getDernierErreur()
+                                : "Le livre n'a pas pu être modifié.");
             }
         } catch (NumberFormatException e) {
-            afficherAlerte(Alert.AlertType.ERROR, "Format incorrect", "Vérifiez vos champs numériques.");
+            AlertUtils.erreur("Format invalide",
+                    "Année, exemplaires disponibles et catégorie doivent être des nombres entiers.");
         }
     }
 
     @FXML
     private void supprimerLivre() {
         if (livreSelectionne == null) {
-            afficherAlerte(Alert.AlertType.WARNING, "Sélection requise", "Sélectionnez un livre.");
+            AlertUtils.erreur("Aucune sélection", "Veuillez sélectionner un livre à supprimer.");
             return;
         }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer le livre " + livreSelectionne.getTitre() + " ?", ButtonType.YES, ButtonType.NO);
-        Optional<ButtonType> res = confirm.showAndWait();
-        if (res.isPresent() && res.get() == ButtonType.YES) {
-            if (livreDAO.supprimerLivre(livreSelectionne.getId())) {
-                rafraichirTableau();
-                viderChamps();
-                afficherAlerte(Alert.AlertType.INFORMATION, "Succès", "Livre supprimé.");
-            } else {
-                afficherAlerte(Alert.AlertType.ERROR, "Erreur", "Impossible de supprimer ce livre (des emprunts y sont rattachés).");
-            }
+        // AMÉLIORATION : confirmation avant toute suppression définitive.
+        boolean confirme = AlertUtils.confirmer("Confirmation",
+                "Supprimer définitivement « " + livreSelectionne.getTitre() + " » ?");
+        if (!confirme) return;
+
+        if (livreDAO.supprimerLivre(livreSelectionne.getId())) {
+            rafraichirTableau();
+            viderChamps();
+        } else {
+            AlertUtils.erreur("Suppression impossible",
+                    livreDAO.getDernierErreur() != null ? livreDAO.getDernierErreur()
+                            : "Ce livre n'a pas pu être supprimé.");
         }
     }
 
     @FXML
     private void filtrerLivres() {
-        listeLivres.setAll(livreDAO.rechercherLivres(txtRecherche.getText()));
+        String motCle = txtRecherche.getText();
+        if (motCle == null || motCle.isBlank()) {
+            rafraichirTableau();
+            return;
+        }
+        listeLivres.setAll(livreDAO.rechercherLivres(motCle));
         tableLivres.setItems(listeLivres);
     }
 
     @FXML
     private void viderChamps() {
+        livreSelectionne = null;
+        tableLivres.getSelectionModel().clearSelection();
         txtTitre.clear(); txtAuteur.clear(); txtIsbn.clear();
         txtAnnee.clear(); txtDispo.clear(); txtCategorie.clear();
-        tableLivres.getSelectionModel().clearSelection();
-        livreSelectionne = null;
     }
 }

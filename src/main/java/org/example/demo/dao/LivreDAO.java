@@ -8,6 +8,13 @@ import java.util.List;
 
 public class LivreDAO {
 
+    // Contient le dernier message d'erreur "humain" pour affichage côté UI
+    private String dernierErreur;
+
+    public String getDernierErreur() {
+        return dernierErreur;
+    }
+
     // CREATE : Ajouter un livre
     public boolean ajouterLivre(Livre livre) {
         String query = "INSERT INTO livres (titre, auteur, isbn, annee, exemplaires_disponibles, categorie_id) VALUES (?, ?, ?, ?, ?, ?)";
@@ -21,6 +28,7 @@ public class LivreDAO {
             stmt.setInt(6, livre.getCategorieId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors de l'ajout du livre (ISBN en double ou catégorie invalide ?) : " + e.getMessage();
             e.printStackTrace();
             return false;
         }
@@ -45,6 +53,7 @@ public class LivreDAO {
                 ));
             }
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors du chargement des livres : " + e.getMessage();
             e.printStackTrace();
         }
         return liste;
@@ -72,6 +81,7 @@ public class LivreDAO {
                 }
             }
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors de la recherche : " + e.getMessage();
             e.printStackTrace();
         }
         return liste;
@@ -91,6 +101,7 @@ public class LivreDAO {
             stmt.setInt(7, livre.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
+            dernierErreur = "Erreur lors de la modification du livre : " + e.getMessage();
             e.printStackTrace();
             return false;
         }
@@ -104,7 +115,8 @@ public class LivreDAO {
             stmt.setInt(1, id);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("❌ Impossible de supprimer : ce livre possède un historique d'emprunts actifs.");
+            dernierErreur = "Impossible de supprimer : ce livre possède un historique d'emprunts actifs.";
+            System.err.println("❌ " + dernierErreur);
             return false;
         }
     }

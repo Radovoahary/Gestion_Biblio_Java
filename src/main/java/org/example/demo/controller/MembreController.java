@@ -7,10 +7,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.example.demo.dao.MembreDAO;
 import org.example.demo.model.Membre;
-
-import java.util.Optional;
+import org.example.demo.util.AlertUtils;
 
 public class MembreController {
+
+    private static final String REGEX_EMAIL = "^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$";
+
     @FXML private TableView<Membre> tableMembres;
     @FXML private TableColumn<Membre, Integer> colId;
     @FXML private TableColumn<Membre, String> colNom;
@@ -32,7 +34,7 @@ public class MembreController {
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         colType.setCellValueFactory(new PropertyValueFactory<>("typeMembre"));
 
-        comboType.setItems(FXCollections.observableArrayList("ETUDIANT", "ENSEIGNANT", "EXTERIEUR"));
+        comboType.setItems(FXCollections.observableArrayList("ETUDIANT", "ENSEIGNANT"));
 
         tableMembres.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
@@ -51,91 +53,84 @@ public class MembreController {
         tableMembres.setItems(listeMembres);
     }
 
-    // Fonction utilitaire pour afficher les retours utilisateur graphiques
-    private void afficherAlerte(Alert.AlertType type, String titre, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(titre);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    // AMÉLIORATION : validation nom / email / type avant tout envoi en base.
+    private boolean champsValides() {
+        if (txtNom.getText() == null || txtNom.getText().isBlank()) {
+            AlertUtils.erreur("Champ manquant", "Le nom du membre est obligatoire.");
+            return false;
+        }
+        String email = txtEmail.getText();
+        if (email != null && !email.isBlank() && !email.matches(REGEX_EMAIL)) {
+            AlertUtils.erreur("Email invalide", "Veuillez saisir une adresse email valide.");
+            return false;
+        }
+        if (comboType.getValue() == null) {
+            AlertUtils.erreur("Champ manquant", "Veuillez sélectionner un type de membre.");
+            return false;
+        }
+        return true;
     }
 
     @FXML
     private void ajouterMembre() {
-        // CORRECTION : Validation stricte des entrées et du format email élémentaire
-        if (txtNom.getText().trim().isEmpty() || txtEmail.getText().trim().isEmpty() || comboType.getValue() == null) {
-            afficherAlerte(Alert.AlertType.WARNING, "Champs vides", "Veuillez remplir l'intégralité du formulaire.");
-            return;
-        }
-        if (!txtEmail.getText().contains("@")) {
-            afficherAlerte(Alert.AlertType.WARNING, "Email invalide", "Veuillez entrer une adresse email valide.");
-            return;
-        }
-
-        Membre m = new Membre(0, txtNom.getText().trim(), txtEmail.getText().trim(), comboType.getValue());
+        if (!champsValides()) return;
+        Membre m = new Membre(0, txtNom.getText(), txtEmail.getText(), comboType.getValue());
         if (membreDAO.ajouterMembre(m)) {
             rafraichirTableau();
             viderChamps();
-            afficherAlerte(Alert.AlertType.INFORMATION, "Succès", "L'adhérent a été ajouté.");
         } else {
-            // CORRECTION : Alerte visuelle en cas de panne DAO ou doublon d'adresse email
-            afficherAlerte(Alert.AlertType.ERROR, "Erreur", "Impossible d'ajouter le membre. L'adresse email est peut-être déjà prise.");
+            AlertUtils.erreur("Échec de l'ajout",
+                    membreDAO.getDernierErreur() != null ? membreDAO.getDernierErreur()
+                            : "Le membre n'a pas pu être ajouté.");
         }
     }
 
     @FXML
     private void modifierMembre() {
         if (membreSelectionne == null) {
-            afficherAlerte(Alert.AlertType.WARNING, "Aucune sélection", "Sélectionnez d'abord un membre dans le tableau.");
+            AlertUtils.erreur("Aucune sélection", "Veuillez sélectionner un membre avant de le modifier.");
             return;
         }
+        if (!champsValides()) return;
 
-        membreSelectionne.setNom(txtNom.getText().trim());
-        membreSelectionne.setEmail(txtEmail.getText().trim());
+        membreSelectionne.setNom(txtNom.getText());
+        membreSelectionne.setEmail(txtEmail.getText());
         membreSelectionne.setTypeMembre(comboType.getValue());
 
         if (membreDAO.modifierMembre(membreSelectionne)) {
             rafraichirTableau();
             viderChamps();
-            afficherAlerte(Alert.AlertType.INFORMATION, "Succès", "Fiche membre mise à jour.");
         } else {
-            afficherAlerte(Alert.AlertType.ERROR, "Erreur", "La mise à jour a échoué.");
+            AlertUtils.erreur("Échec de la modification",
+                    membreDAO.getDernierErreur() != null ? membreDAO.getDernierErreur()
+                            : "Le membre n'a pas pu être modifié.");
         }
     }
 
     @FXML
     private void supprimerMembre() {
         if (membreSelectionne == null) {
-            afficherAlerte(Alert.AlertType.WARNING, "Aucune sélection", "Veuillez sélectionner le membre à supprimer.");
+            AlertUtils.erreur("Aucune sélection", "Veuillez sélectionner un membre à supprimer.");
             return;
         }
+        boolean confirme = AlertUtils.confirmer("Confirmation",
+                "Supprimer définitivement « " + membreSelectionne.getNom() + " » ?");
+        if (!confirme) return;
 
-        // CORRECTION : Boîte de dialogue de confirmation avant action irréversible
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Confirmation de suppression");
-        confirmation.setHeaderText("Supprimer l'adhérent : " + membreSelectionne.getNom() + " ?");
-        confirmation.setContentText("Attention, cette action est irréversible.");
-
-        Optional<ButtonType> result = confirmation.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            if (membreDAO.supprimerMembre(membreSelectionne.getId())) {
-                rafraichirTableau();
-                viderChamps();
-                afficherAlerte(Alert.AlertType.INFORMATION, "Supprimé", "Le membre a été retiré du système.");
-            } else {
-                // CORRECTION : Message explicite à l'écran si contrainte de clé étrangère SQL levée
-                afficherAlerte(Alert.AlertType.ERROR, "Échec de suppression",
-                        "Impossible de supprimer ce membre car il possède un historique d'emprunts actif dans la base.");
-            }
+        if (membreDAO.supprimerMembre(membreSelectionne.getId())) {
+            rafraichirTableau();
+            viderChamps();
+        } else {
+            AlertUtils.erreur("Suppression impossible",
+                    membreDAO.getDernierErreur() != null ? membreDAO.getDernierErreur()
+                            : "Ce membre n'a pas pu être supprimé.");
         }
     }
 
     @FXML
     private void viderChamps() {
-        txtNom.clear();
-        txtEmail.clear();
-        comboType.setValue(null);
-        tableMembres.getSelectionModel().clearSelection();
         membreSelectionne = null;
+        tableMembres.getSelectionModel().clearSelection();
+        txtNom.clear(); txtEmail.clear(); comboType.setValue(null);
     }
 }

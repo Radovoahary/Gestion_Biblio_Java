@@ -7,10 +7,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.example.demo.dao.EmpruntDAO;
 import org.example.demo.model.Emprunt;
+import org.example.demo.util.AlertUtils;
+
 import java.time.LocalDate;
-import java.util.Optional;
 
 public class EmpruntController {
+
     @FXML private TableView<Emprunt> tableEmprunts;
     @FXML private TableColumn<Emprunt, Integer> colId;
     @FXML private TableColumn<Emprunt, String> colLivre;
@@ -33,13 +35,30 @@ public class EmpruntController {
         colDateEmprunt.setCellValueFactory(new PropertyValueFactory<>("dateEmprunt"));
         colDatePrevue.setCellValueFactory(new PropertyValueFactory<>("dateRetourPrevue"));
 
-        tableEmprunts.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            if (newSel != null) {
-                empruntSelectionne = newSel;
+        // AMÉLIORATION : les lignes en retard (date prévue dépassée, non retournées)
+        // sont surlignées en rouge pâle pour attirer l'attention du bibliothécaire.
+        tableEmprunts.setRowFactory(tv -> new TableRow<Emprunt>() {
+            @Override
+            protected void updateItem(Emprunt emprunt, boolean empty) {
+                super.updateItem(emprunt, empty);
+                if (empty || emprunt == null) {
+                    setStyle("");
+                } else if (emprunt.isEnRetard()) {
+                    setStyle("-fx-background-color: #4a1a1a;");
+                } else {
+                    setStyle("");
+                }
+            }
+        });
+
+        tableEmprunts.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                empruntSelectionne = newSelection;
                 txtIdLivre.setText(String.valueOf(empruntSelectionne.getIdLivre()));
                 txtIdMembre.setText(String.valueOf(empruntSelectionne.getIdMembre()));
             }
         });
+
         rafraichirTableau();
     }
 
@@ -48,65 +67,65 @@ public class EmpruntController {
         tableEmprunts.setItems(listeEmprunts);
     }
 
-    private void afficherAlerte(Alert.AlertType type, String titre, String msg) {
-        Alert alert = new Alert(type);
-        alert.setTitle(titre);
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
-        alert.showAndWait();
-    }
-
     @FXML
     private void validerEmprunt() {
         try {
-            int idLivre = Integer.parseInt(txtIdLivre.getText().trim());
-            int idMembre = Integer.parseInt(txtIdMembre.getText().trim());
+            int idLivre = Integer.parseInt(txtIdLivre.getText());
+            int idMembre = Integer.parseInt(txtIdMembre.getText());
 
             if (empruntDAO.enregistrerEmprunt(idLivre, idMembre)) {
                 rafraichirTableau();
                 viderChamps();
-                afficherAlerte(Alert.AlertType.INFORMATION, "Succès", "L'emprunt a bien été enregistré.");
             } else {
-                afficherAlerte(Alert.AlertType.ERROR, "Erreur", "Impossible de valider l'emprunt (vérifiez les ID et le stock de livres).");
+                AlertUtils.erreur("Emprunt refusé",
+                        empruntDAO.getDernierErreur() != null ? empruntDAO.getDernierErreur()
+                                : "L'emprunt n'a pas pu être enregistré.");
             }
         } catch (NumberFormatException e) {
-            afficherAlerte(Alert.AlertType.ERROR, "Format incorrect", "Les ID du livre et du membre doivent être des nombres.");
+            AlertUtils.erreur("Identifiants invalides",
+                    "L'ID du livre et l'ID du membre doivent être des nombres entiers.");
         }
     }
 
     @FXML
     private void retournerLivre() {
         if (empruntSelectionne == null) {
-            afficherAlerte(Alert.AlertType.WARNING, "Sélection requise", "Veuillez sélectionner une ligne d'emprunt active.");
+            AlertUtils.erreur("Aucune sélection", "Veuillez sélectionner un emprunt à clôturer.");
             return;
         }
         if (empruntDAO.retournerLivre(empruntSelectionne.getIdLivre(), empruntSelectionne.getIdMembre())) {
             rafraichirTableau();
             viderChamps();
-            afficherAlerte(Alert.AlertType.INFORMATION, "Succès", "Le livre a été enregistré comme retourné.");
         } else {
-            afficherAlerte(Alert.AlertType.ERROR, "Erreur", "Le traitement du retour a échoué.");
+            AlertUtils.erreur("Échec",
+                    empruntDAO.getDernierErreur() != null ? empruntDAO.getDernierErreur()
+                            : "Le retour n'a pas pu être enregistré.");
         }
     }
 
     @FXML
     private void supprimerEmprunt() {
-        if (empruntSelectionne == null) return;
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Supprimer définitivement cet enregistrement d'emprunt ?", ButtonType.YES, ButtonType.NO);
-        Optional<ButtonType> res = confirm.showAndWait();
-        if (res.isPresent() && res.get() == ButtonType.YES) {
-            if (empruntDAO.supprimerEmprunt(empruntSelectionne.getId())) {
-                rafraichirTableau();
-                viderChamps();
-                afficherAlerte(Alert.AlertType.INFORMATION, "Succès", "Fiche d'emprunt supprimée.");
-            }
+        if (empruntSelectionne == null) {
+            AlertUtils.erreur("Aucune sélection", "Veuillez sélectionner une fiche à supprimer.");
+            return;
+        }
+        boolean confirme = AlertUtils.confirmer("Confirmation", "Supprimer définitivement cette fiche d'emprunt ?");
+        if (!confirme) return;
+
+        if (empruntDAO.supprimerEmprunt(empruntSelectionne.getId())) {
+            rafraichirTableau();
+            viderChamps();
+        } else {
+            AlertUtils.erreur("Échec",
+                    empruntDAO.getDernierErreur() != null ? empruntDAO.getDernierErreur()
+                            : "La fiche d'emprunt n'a pas pu être supprimée.");
         }
     }
 
+    @FXML
     private void viderChamps() {
-        txtIdLivre.clear();
-        txtIdMembre.clear();
-        tableEmprunts.getSelectionModel().clearSelection();
         empruntSelectionne = null;
+        tableEmprunts.getSelectionModel().clearSelection();
+        txtIdLivre.clear(); txtIdMembre.clear();
     }
 }

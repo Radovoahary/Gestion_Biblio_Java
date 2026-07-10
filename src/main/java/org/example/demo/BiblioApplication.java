@@ -7,13 +7,11 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class HelloApplication extends Application {
+public class BiblioApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("main-view.fxml")); // ou ton fichier principal
+        FXMLLoader fxmlLoader = new FXMLLoader(BiblioApplication.class.getResource("main-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1150, 750);
-
-        // Injection CSS
         scene.getStylesheets().add(getClass().getResource("/org/example/demo/style.css").toExternalForm());
 
         stage.setTitle("Library System Management Pro");

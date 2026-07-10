@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
@@ -12,8 +13,8 @@
         <children>
             <HBox spacing="10.0" alignment="CENTER_LEFT">
                 <children>
-                    <Label text="Rechercher :" style="-fx-font-weight: bold;"/>
-                    <TextField fx:id=\"txtRecherche\" promptText="Titre ou auteur..." HBox.hgrow="ALWAYS" onKeyReleased="#filtrerLivres"/>
+                    <Label text="🔍 Rechercher :" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="txtRecherche" promptText="Titre ou auteur..." HBox.hgrow="ALWAYS" onKeyReleased="#filtrerLivres"/>
                 </children>
             </HBox>
 
@@ -21,7 +22,7 @@
                 <columns>
                     <TableColumn fx:id="colId" text="ID" prefWidth="50.0" />
                     <TableColumn fx:id="colTitre" text="Titre" prefWidth="180.0" />
-                    <TableColumn fx:id="colAuteur" text="Auteur" prefWidth="150.0" />
+                    <TableColumn fx:id="colAuteur" text="Auteur" prefWidth="140.0" />
                     <TableColumn fx:id="colIsbn" text="ISBN" prefWidth="100.0" />
                     <TableColumn fx:id="colAnnee" text="Année" prefWidth="60.0" />
                     <TableColumn fx:id="colDispo" text="Dispo" prefWidth="60.0" />
@@ -30,28 +31,32 @@
         </children>
     </VBox>
 
-    <VBox spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" prefWidth="250.0">
-        <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
-        <Label text="Actions sur les Livres" style="-fx-font-weight: bold;" />
+    <VBox spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 5; -fx-background-radius: 5;" prefWidth="250.0">
+        <padding>
+            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+        </padding>
+        <children>
+            <Label text="📚 Actions sur les Livres" style="-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
 
-        <TextField fx:id="txtTitre" promptText="Titre" />
-        <TextField fx:id="txtAuteur" promptText="Auteur" />
-        <TextField fx:id="txtIsbn" promptText="ISBN" />
-        <TextField fx:id="txtAnnee" promptText="Année de publication" />
-        <TextField fx:id="txtDispo" promptText="Nombre d'exemplaires" />
-        <TextField fx:id="txtCategorie" promptText="ID Catégorie (ex: 1)" />
+            <TextField fx:id="txtTitre" promptText="Titre" />
+            <TextField fx:id="txtAuteur" promptText="Auteur" />
+            <TextField fx:id="txtIsbn" promptText="ISBN" />
+            <TextField fx:id="txtAnnee" promptText="Année de publication" />
+            <TextField fx:id="txtDispo" promptText="Nombre d'exemplaires" />
+            <TextField fx:id="txtCategorie" promptText="ID Catégorie (ex: 1)" />
 
-        <VBox spacing="8.0">
-            <children>
-                <Button text="Ajouter" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#ajouterLivre" />
-                <HBox spacing="10.0">
-                    <children>
-                        <Button text="Modifier" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#modifierLivre" />
-                        <Button text="Supprimer" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#supprimerLivre" />
-                    </children>
-                </HBox>
-                <Button text="Vider" maxWidth="Infinity" style="-fx-background-color: #7f8c8d; -fx-text-fill: white;" onAction="#viderChamps" />
-            </children>
-        </VBox>
+            <VBox spacing="8.0">
+                <children>
+                    <Button text="Ajouter" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#ajouterLivre" />
+                    <HBox spacing="10.0">
+                        <children>
+                            <Button text="Modifier" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#modifierLivre" />
+                            <Button text="Supprimer" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#supprimerLivre" />
+                        </children>
+                    </HBox>
+                    <Button text="Vider" maxWidth="Infinity" style="-fx-background-color: #7f8c8d; -fx-text-fill: white;" onAction="#viderChamps" />
+                </children>
+            </VBox>
+        </children>
     </VBox>
 </HBox>
