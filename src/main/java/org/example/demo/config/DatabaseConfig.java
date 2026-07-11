@@ -18,10 +18,10 @@ public class DatabaseConfig {
     }
 
     private static void chargerConfiguration() {
-        try (InputStream is = DatabaseConfig.class.getResourceAsStream("/org/example/demo/config/db-config.json")) {
+        try (InputStream is = DatabaseConfig.class.getResourceAsStream("/org/example/demo/config/db_config.json")) {
             if (is == null) {
                 throw new IllegalStateException(
-                        "Fichier db-config.json introuvable dans les ressources (org/example/demo/config/).");
+                        "Fichier db_config.json introuvable dans les ressources (org/example/demo/config/).");
             }
             try (Reader reader = new InputStreamReader(is)) {
                 credentials = new Gson().fromJson(reader, DbCredentials.class);
@@ -34,7 +34,7 @@ public class DatabaseConfig {
 
     public static Connection getConnection() throws SQLException {
         if (credentials == null || credentials.url == null) {
-            throw new SQLException("Configuration de la base de données absente ou invalide (db-config.json).");
+            throw new SQLException("Configuration de la base de données absente ou invalide (db_config.json).");
         }
         return DriverManager.getConnection(credentials.url, credentials.user, credentials.password);
     }
