@@ -25,6 +25,7 @@
                 <Button fx:id="btnLivres" maxWidth="Infinity" text="📚 Livres" styleClass="menu-button" onAction="#afficherVueLivres"/>
                 <Button fx:id="btnMembres" maxWidth="Infinity" text="👥 Adhérents" styleClass="menu-button" onAction="#afficherVueMembres"/>
                 <Button fx:id="btnEmprunts" maxWidth="Infinity" text="🔄 Emprunts" styleClass="menu-button" onAction="#afficherVueEmprunts"/>
+                <Button fx:id="btnCategories" maxWidth="Infinity" text="🏷️ Catégories" styleClass="menu-button" onAction="#afficherVueCategories"/>
             </children>
         </VBox>
     </left>

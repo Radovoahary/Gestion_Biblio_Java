@@ -15,8 +15,11 @@ import java.sql.SQLException;
 /**
  * Charge la configuration de connexion à la base depuis un fichier JSON
  * situé à LA RACINE DU PROJET (à côté de pom.xml), et non plus depuis les
- * ressources packagées.
-*/
+ * ressources packagées : ceci évite les problèmes de copie Maven vers
+ * target/classes rencontrés précédemment.
+ *
+ * Placez votre fichier ici : demo/db_config.json (au même niveau que pom.xml)
+ */
 public class DatabaseConfig {
 
     private static final String NOM_FICHIER = "db_config.json";
@@ -31,16 +34,16 @@ public class DatabaseConfig {
         Path chemin = Paths.get(NOM_FICHIER).toAbsolutePath();
 
         if (!Files.exists(chemin)) {
-            System.err.println(" Fichier de configuration introuvable : " + chemin);
+            System.err.println("❌ Fichier de configuration introuvable : " + chemin);
             System.err.println("   Créez un fichier '" + NOM_FICHIER + "' à la racine du projet (à côté de pom.xml).");
             return;
         }
 
         try (Reader reader = new FileReader(chemin.toFile())) {
             credentials = new Gson().fromJson(reader, DbCredentials.class);
-            System.out.println(" Configuration de la base chargée depuis : " + chemin);
+            System.out.println("✅ Configuration de la base chargée depuis : " + chemin);
         } catch (IOException e) {
-            System.err.println(" Erreur de lecture de " + chemin + " : " + e.getMessage());
+            System.err.println("❌ Erreur de lecture de " + chemin + " : " + e.getMessage());
             e.printStackTrace();
         }
     }

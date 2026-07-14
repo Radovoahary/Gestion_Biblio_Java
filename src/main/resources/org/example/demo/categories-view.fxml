@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.demo.controller.CategorieController" prefHeight="560.0" prefWidth="700.0">
+    <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+
+    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+        <Label text="🏷️ Liste des Catégories" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+        <TableView fx:id="tableCategories" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="50.0" />
+                <TableColumn fx:id="colNom" text="Nom" prefWidth="180.0" />
+                <TableColumn fx:id="colDescription" text="Description" prefWidth="320.0" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <VBox spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" prefWidth="250.0">
+        <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
+        <Label text="🏷️ Actions sur les Catégories" style="-fx-font-weight: bold;" />
+        <TextField fx:id="txtNom" promptText="Nom de la catégorie" />
+        <TextField fx:id="txtDescription" promptText="Description (optionnel)" />
+
+        <VBox spacing="8.0">
+            <children>
+                <Button text="Ajouter" onAction="#ajouterCategorie" maxWidth="Infinity" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <HBox spacing="10.0">
+                    <children>
+                        <Button text="Modifier" onAction="#modifierCategorie" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <Button text="Supprimer" onAction="#supprimerCategorie" HBox.hgrow="ALWAYS" maxWidth="Infinity" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </children>
+                </HBox>
+                <Button text="Vider" onAction="#viderChamps" maxWidth="Infinity" style="-fx-background-color: #7f8c8d; -fx-text-fill: white;"/>
+            </children>
+        </VBox>
+    </VBox>
+</HBox>

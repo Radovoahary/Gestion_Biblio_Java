@@ -7,6 +7,16 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * NOTE : les noms de colonnes SQL ci-dessous ont été adaptés au schéma réel
+ * de la table 'emprunts' (vérifié via SHOW COLUMNS) :
+ *   - livre_id            (et non id_livre)
+ *   - membre_id           (et non id_membre)
+ *   - date_retour_prevu   (et non date_retour_prevue)
+ *   - date_retour_reel    (et non date_retour_effective)
+ * Les noms des méthodes/attributs Java (idLivre, idMembre, dateRetourPrevue...)
+ * restent inchangés : seule la correspondance avec les colonnes SQL est corrigée.
+ */
 public class EmpruntDAO {
 
     private String dernierErreur;
@@ -100,7 +110,7 @@ public class EmpruntDAO {
                         rs.getDate("date_retour_prevu").toLocalDate(),
                         dateEffective
                 );
-                // Injection des attributs
+                // Injection des attributs bonus pour affichage UI
                 emp.setTitreLivre(rs.getString("titre_livre"));
                 emp.setNomMembre(rs.getString("nom_membre"));
                 liste.add(emp);

@@ -5,7 +5,9 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import org.example.demo.dao.CategorieDAO;
 import org.example.demo.dao.LivreDAO;
+import org.example.demo.model.Categorie;
 import org.example.demo.model.Livre;
 import org.example.demo.util.AlertUtils;
 
@@ -25,10 +27,13 @@ public class LivreController {
     @FXML private TextField txtIsbn;
     @FXML private TextField txtAnnee;
     @FXML private TextField txtDispo;
-    @FXML private TextField txtCategorie;
+    // CORRECTIF/AMÉLIORATION : ComboBox à la place d'un TextField d'ID brut
+    @FXML private ComboBox<Categorie> comboCategorie;
 
     private final LivreDAO livreDAO = new LivreDAO();
+    private final CategorieDAO categorieDAO = new CategorieDAO();
     private final ObservableList<Livre> listeLivres = FXCollections.observableArrayList();
+    private final ObservableList<Categorie> listeCategories = FXCollections.observableArrayList();
     private Livre livreSelectionne;
 
     @FXML
@@ -40,6 +45,9 @@ public class LivreController {
         colAnnee.setCellValueFactory(new PropertyValueFactory<>("annee"));
         colDispo.setCellValueFactory(new PropertyValueFactory<>("exemplairesDisponibles"));
 
+        listeCategories.setAll(categorieDAO.getAllCategories());
+        comboCategorie.setItems(listeCategories);
+
         tableLivres.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 livreSelectionne = newSelection;
@@ -48,11 +56,18 @@ public class LivreController {
                 txtIsbn.setText(livreSelectionne.getIsbn());
                 txtAnnee.setText(String.valueOf(livreSelectionne.getAnnee()));
                 txtDispo.setText(String.valueOf(livreSelectionne.getExemplairesDisponibles()));
-                txtCategorie.setText(String.valueOf(livreSelectionne.getCategorieId()));
+                comboCategorie.setValue(trouverCategorieParId(livreSelectionne.getCategorieId()));
             }
         });
 
         rafraichirTableau();
+    }
+
+    private Categorie trouverCategorieParId(int id) {
+        return listeCategories.stream()
+                .filter(c -> c.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     private void rafraichirTableau() {
@@ -60,8 +75,6 @@ public class LivreController {
         tableLivres.setItems(listeLivres);
     }
 
-    // AMÉLIORATION : validation des champs obligatoires avant tout envoi en base,
-    // avec message clair au lieu d'un échec silencieux.
     private boolean champsValides() {
         if (txtTitre.getText() == null || txtTitre.getText().isBlank()) {
             AlertUtils.erreur("Champ manquant", "Le titre du livre est obligatoire.");
@@ -69,6 +82,10 @@ public class LivreController {
         }
         if (txtAuteur.getText() == null || txtAuteur.getText().isBlank()) {
             AlertUtils.erreur("Champ manquant", "L'auteur du livre est obligatoire.");
+            return false;
+        }
+        if (comboCategorie.getValue() == null) {
+            AlertUtils.erreur("Champ manquant", "Veuillez sélectionner une catégorie.");
             return false;
         }
         return true;
@@ -80,7 +97,7 @@ public class LivreController {
         try {
             Livre nouveau = new Livre(0, txtTitre.getText(), txtAuteur.getText(), txtIsbn.getText(),
                     Integer.parseInt(txtAnnee.getText()), Integer.parseInt(txtDispo.getText()),
-                    Integer.parseInt(txtCategorie.getText()));
+                    comboCategorie.getValue().getId());
 
             if (livreDAO.ajouterLivre(nouveau)) {
                 rafraichirTableau();
@@ -91,8 +108,7 @@ public class LivreController {
                                 : "Le livre n'a pas pu être ajouté.");
             }
         } catch (NumberFormatException e) {
-            AlertUtils.erreur("Format invalide",
-                    "Année, exemplaires disponibles et catégorie doivent être des nombres entiers.");
+            AlertUtils.erreur("Format invalide", "Année et exemplaires disponibles doivent être des nombres entiers.");
         }
     }
 
@@ -109,7 +125,7 @@ public class LivreController {
             livreSelectionne.setIsbn(txtIsbn.getText());
             livreSelectionne.setAnnee(Integer.parseInt(txtAnnee.getText()));
             livreSelectionne.setExemplairesDisponibles(Integer.parseInt(txtDispo.getText()));
-            livreSelectionne.setCategorieId(Integer.parseInt(txtCategorie.getText()));
+            livreSelectionne.setCategorieId(comboCategorie.getValue().getId());
 
             if (livreDAO.modifierLivre(livreSelectionne)) {
                 rafraichirTableau();
@@ -120,8 +136,7 @@ public class LivreController {
                                 : "Le livre n'a pas pu être modifié.");
             }
         } catch (NumberFormatException e) {
-            AlertUtils.erreur("Format invalide",
-                    "Année, exemplaires disponibles et catégorie doivent être des nombres entiers.");
+            AlertUtils.erreur("Format invalide", "Année et exemplaires disponibles doivent être des nombres entiers.");
         }
     }
 
@@ -131,7 +146,6 @@ public class LivreController {
             AlertUtils.erreur("Aucune sélection", "Veuillez sélectionner un livre à supprimer.");
             return;
         }
-        // AMÉLIORATION : confirmation avant toute suppression définitive.
         boolean confirme = AlertUtils.confirmer("Confirmation",
                 "Supprimer définitivement « " + livreSelectionne.getTitre() + " » ?");
         if (!confirme) return;
@@ -162,6 +176,7 @@ public class LivreController {
         livreSelectionne = null;
         tableLivres.getSelectionModel().clearSelection();
         txtTitre.clear(); txtAuteur.clear(); txtIsbn.clear();
-        txtAnnee.clear(); txtDispo.clear(); txtCategorie.clear();
+        txtAnnee.clear(); txtDispo.clear();
+        comboCategorie.setValue(null);
     }
 }

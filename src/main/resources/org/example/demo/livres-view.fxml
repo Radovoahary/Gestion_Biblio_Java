@@ -43,7 +43,7 @@
             <TextField fx:id="txtIsbn" promptText="ISBN" />
             <TextField fx:id="txtAnnee" promptText="Année de publication" />
             <TextField fx:id="txtDispo" promptText="Nombre d'exemplaires" />
-            <TextField fx:id="txtCategorie" promptText="ID Catégorie (ex: 1)" />
+            <ComboBox fx:id="comboCategorie" promptText="Catégorie" maxWidth="Infinity" />
 
             <VBox spacing="8.0">
                 <children>

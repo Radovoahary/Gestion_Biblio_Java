@@ -22,8 +22,8 @@ public class MainController {
     @FXML private Button btnLivres;
     @FXML private Button btnMembres;
     @FXML private Button btnEmprunts;
+    @FXML private Button btnCategories;
 
-    // AMÉLIORATION : fx:id ajoutés dans le FXML pour rendre ces labels dynamiques
     @FXML private Label lblStatLivres;
     @FXML private Label lblStatMembres;
     @FXML private Label lblStatEmprunts;
@@ -32,9 +32,6 @@ public class MainController {
     private final MembreDAO membreDAO = new MembreDAO();
     private final EmpruntDAO empruntDAO = new EmpruntDAO();
 
-    // CORRECTIF BUG #1 : on mémorise le contenu initial du dashboard AVANT
-    // qu'il ne soit remplacé par une autre vue, sinon il est perdu à jamais
-    // dès le premier clic sur "Livres" / "Membres" / "Emprunts".
     private Node vueTableauDeBord;
 
     @FXML
@@ -46,10 +43,6 @@ public class MainController {
         activerBouton(btnDashboard);
     }
 
-    /**
-     * Charge une sous-vue (.fxml) de manière dynamique au centre de l'application
-     * avec une animation de fondu fluide (Fade In).
-     */
     private void chargerSousVue(String fxmlFile, Button boutonActif) {
         try {
             System.out.println("Tentative de chargement de : " + fxmlFile);
@@ -74,19 +67,17 @@ public class MainController {
         }
     }
 
-    // CORRECTIF BUG #2 : retire la classe "menu-button-active" de tous les
-    // boutons puis ne l'applique qu'au bouton correspondant à la vue affichée.
-    // Avant ce correctif, "Tableau de bord" restait en surbrillance en permanence.
     private void activerBouton(Button boutonActif) {
-        for (Button b : new Button[]{btnDashboard, btnLivres, btnMembres, btnEmprunts}) {
-            b.getStyleClass().remove("menu-button-active");
+        for (Button b : new Button[]{btnDashboard, btnLivres, btnMembres, btnEmprunts, btnCategories}) {
+            if (b != null) {
+                b.getStyleClass().remove("menu-button-active");
+            }
         }
         if (!boutonActif.getStyleClass().contains("menu-button-active")) {
             boutonActif.getStyleClass().add("menu-button-active");
         }
     }
 
-    // CORRECTIF BUG #1 (suite) : permet enfin de revenir au tableau de bord.
     @FXML
     private void afficherTableauDeBord() {
         if (vueTableauDeBord != null) {
@@ -111,10 +102,11 @@ public class MainController {
         chargerSousVue("emprunts-view.fxml", btnEmprunts);
     }
 
-    // AMÉLIORATION : les chiffres du dashboard reflètent désormais la vraie base
-    // de données au lieu d'être codés en dur ("4 892", "1 256", "350").
-    // Piste d'optimisation future : remplacer getAllXxx().size() par une vraie
-    // requête SQL COUNT(*) côté DAO pour éviter de charger toutes les lignes.
+    @FXML
+    private void afficherVueCategories() {
+        chargerSousVue("categories-view.fxml", btnCategories);
+    }
+
     private void rafraichirStatistiques() {
         if (lblStatLivres != null) {
             lblStatLivres.setText(String.valueOf(livreDAO.getAllLivres().size()));
