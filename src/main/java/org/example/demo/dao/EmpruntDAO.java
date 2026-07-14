@@ -18,7 +18,7 @@ public class EmpruntDAO {
     // CREATE : Enregistrer un emprunt avec gestion transactionnelle du stock
     public boolean enregistrerEmprunt(int idLivre, int idMembre) {
         String checkStockQuery = "SELECT exemplaires_disponibles FROM livres WHERE id = ?";
-        String insertEmpruntQuery = "INSERT INTO emprunts (id_livre, id_membre, date_emprunt, date_retour_prevue) VALUES (?, ?, ?, ?)";
+        String insertEmpruntQuery = "INSERT INTO emprunts (livre_id, membre_id, date_emprunt, date_retour_prevu) VALUES (?, ?, ?, ?)";
         String updateStockQuery = "UPDATE livres SET exemplaires_disponibles = exemplaires_disponibles - 1 WHERE id = ?";
 
         Connection conn = null;
@@ -81,26 +81,26 @@ public class EmpruntDAO {
         List<Emprunt> liste = new ArrayList<>();
         String query = "SELECT e.*, l.titre AS titre_livre, m.nom AS nom_membre " +
                 "FROM emprunts e " +
-                "JOIN livres l ON e.id_livre = l.id " +
-                "JOIN membres m ON e.id_membre = m.id " +
-                "WHERE e.date_retour_effective IS NULL"; // Filtre uniquement ceux en cours
+                "JOIN livres l ON e.livre_id = l.id " +
+                "JOIN membres m ON e.membre_id = m.id " +
+                "WHERE e.date_retour_reel IS NULL"; // Filtre uniquement ceux en cours
 
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                Date effectiveDateSql = rs.getDate("date_retour_effective");
+                Date effectiveDateSql = rs.getDate("date_retour_reel");
                 LocalDate dateEffective = (effectiveDateSql != null) ? effectiveDateSql.toLocalDate() : null;
 
                 Emprunt emp = new Emprunt(
                         rs.getInt("id"),
-                        rs.getInt("id_livre"),
-                        rs.getInt("id_membre"),
+                        rs.getInt("livre_id"),
+                        rs.getInt("membre_id"),
                         rs.getDate("date_emprunt").toLocalDate(),
-                        rs.getDate("date_retour_prevue").toLocalDate(),
+                        rs.getDate("date_retour_prevu").toLocalDate(),
                         dateEffective
                 );
-                // Injection des attributs bonus pour affichage UI
+                // Injection des attributs
                 emp.setTitreLivre(rs.getString("titre_livre"));
                 emp.setNomMembre(rs.getString("nom_membre"));
                 liste.add(emp);
@@ -114,7 +114,7 @@ public class EmpruntDAO {
 
     // UPDATE : Marquer un retour de livre (+ ré-augmentation du stock)
     public boolean retournerLivre(int idLivre, int idMembre) {
-        String updateEmpruntQuery = "UPDATE emprunts SET date_retour_effective = ? WHERE id_livre = ? AND id_membre = ? AND date_retour_effective IS NULL";
+        String updateEmpruntQuery = "UPDATE emprunts SET date_retour_reel = ? WHERE livre_id = ? AND membre_id = ? AND date_retour_reel IS NULL";
         String updateStockQuery = "UPDATE livres SET exemplaires_disponibles = exemplaires_disponibles + 1 WHERE id = ?";
 
         Connection conn = null;
