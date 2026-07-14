@@ -10,6 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 import org.example.demo.dao.LivreDAO;
 import org.example.demo.dao.MembreDAO;
+import org.example.demo.dao.EmpruntDAO;
 
 import java.io.IOException;
 
