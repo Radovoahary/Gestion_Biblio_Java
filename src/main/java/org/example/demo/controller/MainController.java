@@ -8,7 +8,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-import org.example.demo.dao.EmpruntDAO;
 import org.example.demo.dao.LivreDAO;
 import org.example.demo.dao.MembreDAO;
 

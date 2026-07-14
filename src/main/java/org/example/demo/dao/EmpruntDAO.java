@@ -7,17 +7,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * NOTE : les noms de colonnes SQL ci-dessous ont été adaptés au schéma réel
- * de la table 'emprunts' (vérifié via SHOW COLUMNS) :
- *   - livre_id            (et non id_livre)
- *   - membre_id           (et non id_membre)
- *   - date_retour_prevu   (et non date_retour_prevue)
- *   - date_retour_reel    (et non date_retour_effective)
- * Les noms des méthodes/attributs Java (idLivre, idMembre, dateRetourPrevue...)
- * restent inchangés : seule la correspondance avec les colonnes SQL est corrigée.
- */
 public class EmpruntDAO {
+
+    // RÈGLE MÉTIER : quotas d'emprunts simultanés selon le type de membre
+    private static final int LIMITE_ETUDIANT = 3;
+    private static final int LIMITE_ENSEIGNANT = 6;
 
     private String dernierErreur;
 
@@ -26,7 +20,10 @@ public class EmpruntDAO {
     }
 
     // CREATE : Enregistrer un emprunt avec gestion transactionnelle du stock
+    // + vérification du quota d'emprunts actifs du membre.
     public boolean enregistrerEmprunt(int idLivre, int idMembre) {
+        String checkMembreQuery = "SELECT type_membre FROM membres WHERE id = ?";
+        String checkEmpruntsActifsQuery = "SELECT COUNT(*) FROM emprunts WHERE membre_id = ? AND date_retour_reel IS NULL";
         String checkStockQuery = "SELECT exemplaires_disponibles FROM livres WHERE id = ?";
         String insertEmpruntQuery = "INSERT INTO emprunts (livre_id, membre_id, date_emprunt, date_retour_prevu) VALUES (?, ?, ?, ?)";
         String updateStockQuery = "UPDATE livres SET exemplaires_disponibles = exemplaires_disponibles - 1 WHERE id = ?";
@@ -36,7 +33,39 @@ public class EmpruntDAO {
             conn = DatabaseConfig.getConnection();
             conn.setAutoCommit(false); // Début de la transaction
 
-            // 1. Vérification du stock
+            // 1. Récupérer le type du membre (nécessaire pour connaître son quota)
+            String typeMembre;
+            try (PreparedStatement stmtMembre = conn.prepareStatement(checkMembreQuery)) {
+                stmtMembre.setInt(1, idMembre);
+                try (ResultSet rs = stmtMembre.executeQuery()) {
+                    if (!rs.next()) {
+                        dernierErreur = "Aucun membre ne correspond à cet identifiant.";
+                        conn.rollback();
+                        return false;
+                    }
+                    typeMembre = rs.getString("type_membre");
+                }
+            }
+
+            // 2. RÈGLE MÉTIER : vérifier que le membre n'a pas atteint son quota
+            //    d'emprunts simultanés (3 pour un étudiant, 6 pour un enseignant)
+            int quotaMax = "ENSEIGNANT".equalsIgnoreCase(typeMembre) ? LIMITE_ENSEIGNANT : LIMITE_ETUDIANT;
+            int empruntsActifs;
+            try (PreparedStatement stmtCount = conn.prepareStatement(checkEmpruntsActifsQuery)) {
+                stmtCount.setInt(1, idMembre);
+                try (ResultSet rs = stmtCount.executeQuery()) {
+                    rs.next();
+                    empruntsActifs = rs.getInt(1);
+                }
+            }
+            if (empruntsActifs >= quotaMax) {
+                dernierErreur = "Quota d'emprunts atteint : ce membre (" + typeMembre + ") a déjà "
+                        + empruntsActifs + " emprunt(s) en cours, pour un maximum autorisé de " + quotaMax + ".";
+                conn.rollback();
+                return false;
+            }
+
+            // 3. Vérification du stock
             try (PreparedStatement stmtCheck = conn.prepareStatement(checkStockQuery)) {
                 stmtCheck.setInt(1, idLivre);
                 try (ResultSet rs = stmtCheck.executeQuery()) {
@@ -53,7 +82,7 @@ public class EmpruntDAO {
                 }
             }
 
-            // 2. Insertion de l'emprunt (Durée par défaut : 14 jours)
+            // 4. Insertion de l'emprunt (Durée par défaut : 14 jours)
             LocalDate aujourdHui = LocalDate.now();
             LocalDate retourPrevu = aujourdHui.plusDays(14);
             try (PreparedStatement stmtInsert = conn.prepareStatement(insertEmpruntQuery)) {
@@ -64,7 +93,7 @@ public class EmpruntDAO {
                 stmtInsert.executeUpdate();
             }
 
-            // 3. Diminution du stock du livre
+            // 5. Diminution du stock du livre
             try (PreparedStatement stmtUpdate = conn.prepareStatement(updateStockQuery)) {
                 stmtUpdate.setInt(1, idLivre);
                 stmtUpdate.executeUpdate();
@@ -84,6 +113,26 @@ public class EmpruntDAO {
                 try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
             }
         }
+    }
+
+    /**
+     * Nombre d'emprunts actuellement en cours (non retournés) pour un membre.
+     * Exposé publiquement : réutilisable pour l'afficher dans l'écran Membres,
+     */
+    public int compterEmpruntsActifs(int idMembre) {
+        String query = "SELECT COUNT(*) FROM emprunts WHERE membre_id = ? AND date_retour_reel IS NULL";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, idMembre);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     // READ : Récupérer tous les emprunts actifs (non encore retournés officiellement)
@@ -110,7 +159,6 @@ public class EmpruntDAO {
                         rs.getDate("date_retour_prevu").toLocalDate(),
                         dateEffective
                 );
-                // Injection des attributs bonus pour affichage UI
                 emp.setTitreLivre(rs.getString("titre_livre"));
                 emp.setNomMembre(rs.getString("nom_membre"));
                 liste.add(emp);
@@ -132,7 +180,6 @@ public class EmpruntDAO {
             conn = DatabaseConfig.getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Mettre à jour la date de retour effective
             try (PreparedStatement stmtEmp = conn.prepareStatement(updateEmpruntQuery)) {
                 stmtEmp.setDate(1, Date.valueOf(LocalDate.now()));
                 stmtEmp.setInt(2, idLivre);
@@ -144,7 +191,6 @@ public class EmpruntDAO {
                 }
             }
 
-            // 2. Rendre le livre à nouveau disponible au stock (+1)
             try (PreparedStatement stmtStock = conn.prepareStatement(updateStockQuery)) {
                 stmtStock.setInt(1, idLivre);
                 stmtStock.executeUpdate();
@@ -157,8 +203,7 @@ public class EmpruntDAO {
             if (conn != null) {
                 try {
                     conn.rollback();
-                }
-                catch (SQLException ex) {
+                } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
             }

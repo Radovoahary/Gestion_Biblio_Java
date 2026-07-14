@@ -5,7 +5,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import org.example.demo.dao.EmpruntDAO;
 import org.example.demo.model.Emprunt;
 import org.example.demo.util.AlertUtils;
 
